@@ -6,7 +6,8 @@ import '../services/count_history_repository.dart';
 
 class CounterProvider extends ChangeNotifier {
   final TasbeehRepository _tasbeehRepository = TasbeehRepository();
-  final CountHistoryRepository _countHistoryRepository = CountHistoryRepository();
+  final CountHistoryRepository _countHistoryRepository =
+      CountHistoryRepository();
 
   // Current state
   Tasbeeh? _currentTasbeeh;
@@ -17,14 +18,14 @@ class CounterProvider extends ChangeNotifier {
   Tasbeeh? get currentTasbeeh => _currentTasbeeh;
   bool get isLoading => _isLoading;
   String? get error => _error;
-  
+
   // Counter-specific getters
   int get currentCount => _currentTasbeeh?.currentCount ?? 0;
   int get roundNumber => _currentTasbeeh?.roundNumber ?? 1;
   int? get targetCount => _currentTasbeeh?.targetCount;
   bool get isUnlimited => _currentTasbeeh?.isUnlimited ?? true;
   bool get isTargetReached => _currentTasbeeh?.isTargetReached ?? false;
-  
+
   // Progress calculation for visual progress ring
   double get progressPercentage {
     if (_currentTasbeeh == null || _currentTasbeeh!.isUnlimited) {
@@ -38,7 +39,7 @@ class CounterProvider extends ChangeNotifier {
     if (_currentTasbeeh == null || _currentTasbeeh!.isUnlimited) {
       return 0;
     }
-    
+
     const totalSegments = 33; // As specified in the design
     return (progressPercentage * totalSegments).floor();
   }
@@ -59,7 +60,19 @@ class CounterProvider extends ChangeNotifier {
     try {
       final defaultTasbeeh = await _tasbeehRepository.getDefaultTasbeeh();
       if (defaultTasbeeh != null) {
-        _currentTasbeeh = defaultTasbeeh;
+        // Reset the counter to 0 when app starts (fresh session)
+        _currentTasbeeh = defaultTasbeeh.copyWith(
+          currentCount: 0,
+          roundNumber: 1,
+        );
+
+        // Update the database with reset values
+        await _tasbeehRepository.updateTasbeehCount(
+          _currentTasbeeh!.id,
+          0, // Reset count to 0
+          1, // Reset round to 1
+        );
+
         await _updateLastUsed();
       } else {
         _setError('No default Tasbeeh found');
@@ -81,7 +94,16 @@ class CounterProvider extends ChangeNotifier {
     try {
       final tasbeeh = await _tasbeehRepository.getTasbeehById(tasbeehId);
       if (tasbeeh != null) {
-        _currentTasbeeh = tasbeeh;
+        // Reset the counter when switching to a different Tasbeeh
+        _currentTasbeeh = tasbeeh.copyWith(currentCount: 0, roundNumber: 1);
+
+        // Update the database with reset values
+        await _tasbeehRepository.updateTasbeehCount(
+          _currentTasbeeh!.id,
+          0, // Reset count to 0
+          1, // Reset round to 1
+        );
+
         await _updateLastUsed();
       } else {
         _setError('Tasbeeh not found');
@@ -108,8 +130,8 @@ class CounterProvider extends ChangeNotifier {
       bool roundCompleted = false;
 
       // Check for round completion
-      if (!_currentTasbeeh!.isUnlimited && 
-          _currentTasbeeh!.targetCount != null && 
+      if (!_currentTasbeeh!.isUnlimited &&
+          _currentTasbeeh!.targetCount != null &&
           newCount >= _currentTasbeeh!.targetCount!) {
         // Round completed - reset count and increment round
         newCount = 0;
@@ -218,7 +240,9 @@ class CounterProvider extends ChangeNotifier {
     _clearError();
 
     try {
-      final updatedTasbeeh = await _tasbeehRepository.getTasbeehById(_currentTasbeeh!.id);
+      final updatedTasbeeh = await _tasbeehRepository.getTasbeehById(
+        _currentTasbeeh!.id,
+      );
       if (updatedTasbeeh != null) {
         _currentTasbeeh = updatedTasbeeh;
       }
@@ -234,7 +258,7 @@ class CounterProvider extends ChangeNotifier {
     if (_currentTasbeeh == null || !_currentTasbeeh!.isUnlimited) {
       return 0.0;
     }
-    
+
     // For unlimited Tasbeehs, create a continuous rotation effect
     // Each 100 counts = one full rotation
     const countsPerRotation = 100;
@@ -252,7 +276,7 @@ class CounterProvider extends ChangeNotifier {
   // Get display text for round number
   String get roundDisplayText {
     if (_currentTasbeeh == null) return '';
-    
+
     if (_currentTasbeeh!.isUnlimited) {
       // For unlimited Tasbeehs, show rounds based on every 100 counts
       final roundsCompleted = (currentCount / 100).floor();
@@ -266,20 +290,20 @@ class CounterProvider extends ChangeNotifier {
   // Validate counter state
   bool validateCounterState() {
     if (_currentTasbeeh == null) return false;
-    
+
     // Validate count is not negative
     if (_currentTasbeeh!.currentCount < 0) return false;
-    
+
     // Validate round number is positive
     if (_currentTasbeeh!.roundNumber < 1) return false;
-    
+
     // For limited Tasbeehs, validate count doesn't exceed target
-    if (!_currentTasbeeh!.isUnlimited && 
+    if (!_currentTasbeeh!.isUnlimited &&
         _currentTasbeeh!.targetCount != null &&
         _currentTasbeeh!.currentCount >= _currentTasbeeh!.targetCount!) {
       return false;
     }
-    
+
     return true;
   }
 
@@ -317,6 +341,4 @@ class CounterProvider extends ChangeNotifier {
 
     await _countHistoryRepository.insertCountHistory(countHistory);
   }
-
-
 }
