@@ -1,7 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../providers/counter_provider.dart';
 import '../providers/settings_provider.dart';
@@ -147,7 +146,7 @@ class _CircularCounterState extends State<CircularCounter>
                 isActive: settingsProvider.soundEnabled,
                 onTap: () {
                   settingsProvider.toggleSound();
-                  HapticFeedback.lightImpact();
+                  // Haptic feedback is handled inside toggleSound method
                 },
               ),
               const SizedBox(width: 8),
@@ -158,7 +157,7 @@ class _CircularCounterState extends State<CircularCounter>
                 isActive: settingsProvider.vibrationEnabled,
                 onTap: () {
                   settingsProvider.toggleVibration();
-                  HapticFeedback.lightImpact();
+                  // Haptic feedback is handled inside toggleVibration method
                 },
               ),
               const SizedBox(width: 8),
@@ -170,7 +169,7 @@ class _CircularCounterState extends State<CircularCounter>
                 alwaysBlue: true,
                 onTap: () async {
                   await counterProvider.decrement();
-                  HapticFeedback.lightImpact();
+                  settingsProvider.provideHapticFeedback();
                 },
               ),
               const SizedBox(width: 8),
@@ -191,8 +190,8 @@ class _CircularCounterState extends State<CircularCounter>
                 icon: CupertinoIcons.star,
                 alwaysBlue: true,
                 onTap: () {
-                  HapticFeedback.lightImpact();
-                  // TODO: Implement rate app functionality
+                  settingsProvider.provideHapticFeedback();
+                  settingsProvider.openAppStoreForRating();
                 },
               ),
             ],
