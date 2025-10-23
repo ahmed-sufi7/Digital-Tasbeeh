@@ -3,11 +3,30 @@ import 'package:provider/provider.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_text_styles.dart';
 import '../providers/counter_provider.dart';
+import '../providers/settings_provider.dart';
 import '../widgets/circular_counter.dart';
 import '../widgets/ios_header.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
+
+  void _handleScreenTap(BuildContext context) async {
+    final counterProvider = Provider.of<CounterProvider>(
+      context,
+      listen: false,
+    );
+    final settingsProvider = Provider.of<SettingsProvider>(
+      context,
+      listen: false,
+    );
+
+    // Provide haptic and audio feedback
+    settingsProvider.provideHapticFeedback();
+    settingsProvider.provideAudioFeedback();
+
+    // Increment counter
+    await counterProvider.increment();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,37 +75,45 @@ class HomeScreen extends StatelessWidget {
                 ],
               ),
 
-              // Main content
+              // Main content with full-screen tap detection
               Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20.0,
-                    vertical: 20.0,
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // Main Arabic heading
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 32),
-                        child: Text(
-                          'إِنَّ اللَّهَ وَمَلَائِكَتَهُ يُصَلُّونَ عَلَى النَّبِيِّ ۚ يَا أَيُّهَا الَّذِينَ آمَنُوا صَلُّوا عَلَيْهِ وَسَلِّمُوا تَسْلِيمًا',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF1E90FF),
-                            height: 1.4,
-                            letterSpacing: 0.2,
+                child: GestureDetector(
+                  onTap: () => _handleScreenTap(context),
+                  behavior: HitTestBehavior.translucent,
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                      left: 20.0,
+                      right: 20.0,
+                      top: 8.0,
+                      bottom: 120.0, // Space for floating nav bar
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        // Main Arabic heading at the top
+                        Padding(
+                          padding: const EdgeInsets.only(
+                            left: 32,
+                            right: 32,
+                            top: 12,
+                          ),
+                          child: Text(
+                            'إِنَّ اللَّهَ وَمَلَائِكَتَهُ يُصَلُّونَ عَلَى النَّبِيِّ ۚ يَا أَيُّهَا الَّذِينَ آمَنُوا صَلُّوا عَلَيْهِ وَسَلِّمُوا تَسْلِيمًا',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF1E90FF),
+                              height: 1.4,
+                              letterSpacing: 0.2,
+                            ),
                           ),
                         ),
-                      ),
 
-                      const SizedBox(height: 24),
-
-                      // Main circular counter component (includes action bar)
-                      const Expanded(child: CircularCounter()),
-                    ],
+                        // Centered counter and action bar
+                        Expanded(child: Center(child: const CircularCounter())),
+                      ],
+                    ),
                   ),
                 ),
               ),
