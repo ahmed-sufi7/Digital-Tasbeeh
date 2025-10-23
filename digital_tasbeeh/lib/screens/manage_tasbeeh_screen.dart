@@ -34,23 +34,35 @@ class _ManageTasbeehScreenState extends State<ManageTasbeehScreen> {
       navigationBar: CupertinoNavigationBar(
         backgroundColor: AppColors.surfaceColor(isDark).withOpacity(0.9),
         border: null,
-        middle: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4.0),
-          child: Text(
-            'Manage Tasbeehs',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textPrimaryColor(isDark),
-              fontFamily: AppTextStyles.fontFamily,
-              letterSpacing: -0.4,
+        leading: Transform.translate(
+          offset: const Offset(-8, 0),
+          child: CupertinoButton(
+            padding: const EdgeInsets.all(8),
+            onPressed: () => Navigator.pop(context),
+            child: Icon(
+              CupertinoIcons.back,
+              color: AppColors.primary,
+              size: 24,
             ),
           ),
         ),
-        trailing: CupertinoButton(
-          padding: EdgeInsets.zero,
-          onPressed: () => _showCreateTasbeehModal(context),
-          child: Icon(CupertinoIcons.add, color: AppColors.primary, size: 28),
+        middle: Text(
+          'Manage Tasbeehs',
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textPrimaryColor(isDark),
+            fontFamily: AppTextStyles.fontFamily,
+            letterSpacing: -0.4,
+          ),
+        ),
+        trailing: Transform.translate(
+          offset: const Offset(8, 0),
+          child: CupertinoButton(
+            padding: const EdgeInsets.all(8),
+            onPressed: () => _showCreateTasbeehModal(context),
+            child: Icon(CupertinoIcons.add, color: AppColors.primary, size: 28),
+          ),
         ),
       ),
       child: SafeArea(
