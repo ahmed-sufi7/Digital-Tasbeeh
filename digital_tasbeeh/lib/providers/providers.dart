@@ -2,3 +2,4 @@
 export 'counter_provider.dart';
 export 'settings_provider.dart';
 export 'navigation_provider.dart';
+export 'tasbeeh_provider.dart';

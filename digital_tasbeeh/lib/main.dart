@@ -49,6 +49,9 @@ class DigitalTasbeehApp extends StatelessWidget {
           create: (context) => SettingsProvider()..initialize(),
         ),
         ChangeNotifierProvider(create: (context) => NavigationProvider()),
+        ChangeNotifierProvider(
+          create: (context) => TasbeehProvider()..initialize(),
+        ),
       ],
       child: CupertinoApp(
         title: 'Digital Tasbeeh',
