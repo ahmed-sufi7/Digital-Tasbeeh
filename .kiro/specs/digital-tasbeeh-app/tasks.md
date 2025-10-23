@@ -14,7 +14,11 @@
   - Create constants/app_text_styles.dart with SF Pro Display font family and iOS typography scale
   - _Requirements: 7.2, 8.1, 9.2_
 
-- [ ] 2. Implement core data models and database layer
+- [x] 2. Implement core data models and database layer
+
+
+
+
   - Create Tasbeeh model class with id, name, targetCount, currentCount, roundNumber, timestamps, and isDefault properties
   - Create CountHistory model for tracking individual count events with timestamps
   - Create AppSettings model for user preferences and configuration
