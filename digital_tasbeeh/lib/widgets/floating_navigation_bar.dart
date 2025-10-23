@@ -23,10 +23,9 @@ class FloatingNavigationBar extends StatelessWidget {
     const barHeight = 58.0;
     const totalHeight = 75.0;
 
-    // Get the bottom safe area to account for system navigation
-    final bottomSafeArea = MediaQuery.of(context).viewPadding.bottom;
-    // Always maintain 12px distance from system navigation bar
-    final bottomPosition = bottomSafeArea + 12.0;
+    // Since we're in full screen mode, position from bottom edge
+    // Use a fixed distance from bottom edge for consistent positioning
+    const bottomPosition = 30.0;
 
     return Positioned(
       bottom: bottomPosition,

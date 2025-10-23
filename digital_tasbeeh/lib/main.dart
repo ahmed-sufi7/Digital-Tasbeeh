@@ -15,7 +15,7 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
 
-  // Set system UI overlay style
+  // Set system UI overlay style and enable full screen mode
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: CupertinoColors.transparent,
@@ -24,6 +24,12 @@ void main() async {
       systemNavigationBarColor: CupertinoColors.transparent,
       systemNavigationBarIconBrightness: Brightness.dark,
     ),
+  );
+
+  // Hide system navigation bar for full screen experience
+  SystemChrome.setEnabledSystemUIMode(
+    SystemUiMode.immersiveSticky,
+    overlays: [SystemUiOverlay.top], // Keep status bar, hide navigation bar
   );
 
   runApp(const DigitalTasbeehApp());
