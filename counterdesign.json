@@ -1,0 +1,560 @@
+{
+  "design_specification": {
+    "app_name": "Digital Tasbeeh Counter",
+    "platform": "Flutter (Android)",
+    "design_style": "iOS Cupertino",
+    "theme_support": ["light", "dark"],
+    
+    "home_screen": {
+      "layout": {
+        "orientation": "vertical",
+        "alignment": "center",
+        "padding": {
+          "horizontal": 20,
+          "vertical": 40
+        }
+      },
+      
+      "action_bar": {
+        "position": "top_center",
+        "margin_top": 60,
+        "type": "horizontal_pill",
+        "background": {
+          "light_mode": "#C8C8C8",
+          "dark_mode": "#3A3A3C",
+          "opacity": 0.9
+        },
+        "dimensions": {
+          "height": 80,
+          "width": 430,
+          "border_radius": 40
+        },
+        "shadow": {
+          "enabled": true,
+          "color": "#00000015",
+          "blur_radius": 10,
+          "offset_y": 2
+        },
+        "buttons": [
+          {
+            "id": "sound_toggle",
+            "position": 1,
+            "icon": {
+              "type": "volume_up",
+              "active_color": "#007AFF",
+              "inactive_color": "#8E8E93",
+              "size": 32,
+              "stroke_width": 2.5
+            },
+            "function": "toggle_sound",
+            "haptic_feedback": true,
+            "animation": "scale_bounce"
+          },
+          {
+            "id": "vibrate_toggle",
+            "position": 2,
+            "icon": {
+              "type": "phone_vibrate",
+              "active_color": "#007AFF",
+              "inactive_color": "#8E8E93",
+              "size": 28,
+              "stroke_width": 2.5,
+              "description": "phone/mobile icon representing vibration"
+            },
+            "function": "toggle_vibration",
+            "haptic_feedback": true,
+            "animation": "scale_bounce"
+          },
+          {
+            "id": "undo",
+            "position": 3,
+            "icon": {
+              "type": "minus",
+              "color": "#007AFF",
+              "size": 32,
+              "stroke_width": 3,
+              "shape": "horizontal_line"
+            },
+            "function": "undo_count",
+            "haptic_feedback": true,
+            "animation": "scale_press"
+          },
+          {
+            "id": "redo",
+            "position": 4,
+            "icon": {
+              "type": "refresh_circular_arrow",
+              "color": "#007AFF",
+              "size": 36,
+              "stroke_width": 2.5,
+              "rotation": "clockwise",
+              "arrow_direction": "right"
+            },
+            "function": "redo_count",
+            "haptic_feedback": true,
+            "animation": "rotate_360"
+          },
+          {
+            "id": "rate_app",
+            "position": 5,
+            "icon": {
+              "type": "star_outline",
+              "color": "#007AFF",
+              "size": 36,
+              "stroke_width": 2.5,
+              "fill": "none"
+            },
+            "function": "open_rate_app_dialog",
+            "haptic_feedback": true,
+            "animation": "scale_bounce"
+          }
+        ],
+        "button_spacing": 24,
+        "button_padding": 12,
+        "touch_area": {
+          "width": 60,
+          "height": 60,
+          "shape": "circular"
+        }
+      },
+      
+      "counter_component": {
+        "position": "center",
+        "margin_top": 100,
+        "tap_to_increment": true,
+        "tap_area": "full_counter",
+        "haptic_on_tap": true,
+        "sound_on_tap": true,
+        
+        "outer_ring": {
+          "type": "background_track",
+          "dimensions": {
+            "diameter": 380,
+            "stroke_width": 14
+          },
+          "color": {
+            "light_mode": "#C8C8C8",
+            "dark_mode": "#3A3A3C",
+            "opacity": 1
+          },
+          "style": "solid",
+          "position": "behind_progress_ring"
+        },
+        
+        "progress_ring": {
+          "type": "animated_arc",
+          "dimensions": {
+            "diameter": 380,
+            "stroke_width": 14
+          },
+          "color": "#007AFF",
+          "gradient": {
+            "enabled": false
+          },
+          "style": "rounded_caps",
+          "start_angle": -90,
+          "animation": {
+            "type": "smooth_increment",
+            "duration_ms": 300,
+            "easing": "ease_out"
+          },
+          "progress_calculation": "current_count / target_count",
+          "min_progress": 0,
+          "max_progress": 1,
+          "direction": "clockwise"
+        },
+        
+        "progress_dots": {
+          "enabled": true,
+          "count": 33,
+          "dimensions": {
+            "diameter": 6
+          },
+          "color": "#FFFFFF",
+          "spacing": "even_distribution",
+          "position": "on_progress_ring",
+          "visibility": "show_on_completed_progress_only",
+          "animation": {
+            "type": "fade_in",
+            "duration_ms": 200
+          }
+        },
+        
+        "progress_handle": {
+          "enabled": true,
+          "type": "circular_knob",
+          "dimensions": {
+            "diameter": 20
+          },
+          "color": "#FFFFFF",
+          "position": "end_of_progress_arc",
+          "shadow": {
+            "enabled": true,
+            "color": "#00000020",
+            "blur_radius": 4,
+            "offset_y": 2
+          }
+        },
+        
+        "inner_circle": {
+          "type": "white_background",
+          "dimensions": {
+            "diameter": 352
+          },
+          "color": {
+            "light_mode": "#FFFFFF",
+            "dark_mode": "#1C1C1E"
+          },
+          "border": {
+            "enabled": false
+          },
+          "shadow": {
+            "enabled": true,
+            "color": "#00000008",
+            "blur_radius": 20,
+            "spread": -5
+          }
+        },
+        
+        "tick_marks": {
+          "enabled": true,
+          "count": 100,
+          "type": "radial_lines",
+          "dimensions": {
+            "length": 12,
+            "width": 1.5
+          },
+          "color": {
+            "light_mode": "#C8C8C8",
+            "dark_mode": "#48484A",
+            "opacity": 0.6
+          },
+          "position": {
+            "radius": 166,
+            "start_angle": 0,
+            "end_angle": 360
+          },
+          "highlight_every": null,
+          "animation": "none"
+        },
+        
+        "current_count_display": {
+          "position": "center_top",
+          "margin_top": 110,
+          "font": {
+            "family": "SF Pro Display",
+            "fallback": "Roboto",
+            "weight": 300,
+            "size": 120,
+            "letter_spacing": -2
+          },
+          "color": "#007AFF",
+          "text_align": "center",
+          "animation": {
+            "on_increment": {
+              "type": "scale_pulse",
+              "scale_from": 1,
+              "scale_to": 1.1,
+              "duration_ms": 150
+            }
+          },
+          "formatting": {
+            "type": "number",
+            "thousands_separator": false,
+            "decimal_places": 0
+          }
+        },
+        
+        "target_count_display": {
+          "enabled": true,
+          "condition": "when_target_count_exists",
+          "position": "center_middle",
+          "margin_top": 200,
+          "format": "/ {target_count}",
+          "font": {
+            "family": "SF Pro Display",
+            "fallback": "Roboto",
+            "weight": 300,
+            "size": 48,
+            "letter_spacing": 0
+          },
+          "color": {
+            "light_mode": "#8E8E93",
+            "dark_mode": "#98989D"
+          },
+          "text_align": "center"
+        },
+        
+        "round_display": {
+          "enabled": true,
+          "condition": "when_target_count_exists",
+          "position": "center_bottom",
+          "margin_top": 270,
+          "format": "Round {round_number}",
+          "font": {
+            "family": "SF Pro Display",
+            "fallback": "Roboto",
+            "weight": 400,
+            "size": 42,
+            "letter_spacing": 0
+          },
+          "color": "#007AFF",
+          "text_align": "center",
+          "animation": {
+            "on_round_complete": {
+              "type": "scale_bounce",
+              "duration_ms": 500
+            }
+          }
+        },
+        
+        "unlimited_mode": {
+          "enabled": true,
+          "condition": "when_no_target_count",
+          "displays": {
+            "current_count": {
+              "position": "center",
+              "font_size": 140,
+              "color": "#007AFF"
+            },
+            "target_count": {
+              "visible": false
+            },
+            "round_display": {
+              "visible": false
+            }
+          },
+          "progress_ring": {
+            "mode": "infinite_scroll",
+            "animation": "continuous_rotation"
+          }
+        }
+      },
+      
+      "tasbeeh_name_display": {
+        "position": "below_counter",
+        "margin_top": 40,
+        "font": {
+          "family": "SF Pro Display",
+          "fallback": "Roboto",
+          "weight": 500,
+          "size": 24,
+          "letter_spacing": 0.5
+        },
+        "color": {
+          "light_mode": "#000000",
+          "dark_mode": "#FFFFFF",
+          "opacity": 0.8
+        },
+        "text_align": "center",
+        "max_width": 300,
+        "truncate": "ellipsis"
+      },
+      
+      "floating_navigation_bar": {
+        "position": "bottom_center",
+        "margin_bottom": 30,
+        "type": "pill_navigation",
+        "background": {
+          "light_mode": "#FFFFFF",
+          "dark_mode": "#1C1C1E",
+          "opacity": 0.95,
+          "blur": "frosted_glass"
+        },
+        "dimensions": {
+          "height": 70,
+          "width": 280,
+          "border_radius": 35
+        },
+        "shadow": {
+          "enabled": true,
+          "color": "#00000020",
+          "blur_radius": 20,
+          "offset_y": 8
+        },
+        "border": {
+          "enabled": true,
+          "width": 0.5,
+          "color": {
+            "light_mode": "#00000010",
+            "dark_mode": "#FFFFFF10"
+          }
+        },
+        "buttons": [
+          {
+            "id": "home",
+            "position": 1,
+            "icon": {
+              "type": "home",
+              "size": 28,
+              "active_color": "#007AFF",
+              "inactive_color": "#8E8E93"
+            },
+            "label": null,
+            "active": true,
+            "route": "/home"
+          },
+          {
+            "id": "manage",
+            "position": 2,
+            "icon": {
+              "type": "plus_circle",
+              "size": 32,
+              "active_color": "#007AFF",
+              "inactive_color": "#8E8E93"
+            },
+            "label": null,
+            "active": false,
+            "route": "/manage"
+          },
+          {
+            "id": "stats",
+            "position": 3,
+            "icon": {
+              "type": "chart_bar",
+              "size": 28,
+              "active_color": "#007AFF",
+              "inactive_color": "#8E8E93"
+            },
+            "label": null,
+            "active": false,
+            "route": "/stats"
+          }
+        ],
+        "button_spacing": 50,
+        "animation": {
+          "on_tap": "scale_press",
+          "on_switch": "fade_color",
+          "duration_ms": 200
+        }
+      }
+    },
+    
+    "color_palette": {
+      "primary": "#007AFF",
+      "secondary": "#5AC8FA",
+      "background_light": "#F2F2F7",
+      "background_dark": "#000000",
+      "surface_light": "#FFFFFF",
+      "surface_dark": "#1C1C1E",
+      "text_primary_light": "#000000",
+      "text_primary_dark": "#FFFFFF",
+      "text_secondary_light": "#8E8E93",
+      "text_secondary_dark": "#98989D",
+      "gray_1": "#C8C8C8",
+      "gray_2": "#3A3A3C",
+      "gray_3": "#48484A"
+    },
+    
+    "typography": {
+      "font_family_primary": "SF Pro Display",
+      "font_family_fallback": "Roboto",
+      "weights": {
+        "light": 300,
+        "regular": 400,
+        "medium": 500,
+        "semibold": 600,
+        "bold": 700
+      }
+    },
+    
+    "animations": {
+      "scale_bounce": {
+        "type": "spring",
+        "scale_to": 1.15,
+        "tension": 300,
+        "friction": 10
+      },
+      "scale_press": {
+        "type": "ease_in_out",
+        "scale_to": 0.9,
+        "duration_ms": 100
+      },
+      "rotate_360": {
+        "type": "ease_in_out",
+        "rotation_degrees": 360,
+        "duration_ms": 400
+      },
+      "fade_in": {
+        "type": "ease_out",
+        "opacity_from": 0,
+        "opacity_to": 1,
+        "duration_ms": 200
+      },
+      "scale_pulse": {
+        "type": "ease_out",
+        "scale_from": 1,
+        "scale_to": 1.1,
+        "scale_back": 1,
+        "duration_ms": 150
+      }
+    },
+    
+    "interactions": {
+      "haptic_feedback": {
+        "enabled": true,
+        "types": {
+          "light": "on_button_tap",
+          "medium": "on_counter_increment",
+          "heavy": "on_round_complete"
+        }
+      },
+      "sound_effects": {
+        "enabled": true,
+        "sounds": {
+          "counter_tap": "click_soft.mp3",
+          "round_complete": "success_chime.mp3",
+          "button_tap": "tap_light.mp3"
+        },
+        "volume": 0.5
+      }
+    },
+    
+    "counter_logic": {
+      "increment_on_tap": true,
+      "tap_area": "entire_counter_component",
+      "double_tap_protection": {
+        "enabled": true,
+        "min_delay_ms": 100
+      },
+      "round_completion": {
+        "auto_reset_count": true,
+        "increment_round_number": true,
+        "show_celebration_animation": true,
+        "play_completion_sound": true,
+        "haptic_pattern": "success"
+      },
+      "unlimited_mode": {
+        "no_target_count": true,
+        "infinite_counting": true,
+        "no_round_tracking": true
+      }
+    },
+    
+    "responsive_design": {
+      "screen_sizes": {
+        "small": "< 360dp",
+        "medium": "360dp - 480dp",
+        "large": "> 480dp"
+      },
+      "scaling": {
+        "counter_diameter": {
+          "small": 320,
+          "medium": 380,
+          "large": 420
+        },
+        "font_sizes": {
+          "scale_factor": "responsive"
+        }
+      }
+    },
+    
+    "accessibility": {
+      "semantic_labels": true,
+      "screen_reader_support": true,
+      "high_contrast_mode": true,
+      "minimum_touch_target": 48,
+      "color_blind_friendly": true
+    }
+  }
+}
