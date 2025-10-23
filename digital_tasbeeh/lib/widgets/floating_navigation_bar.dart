@@ -1,10 +1,16 @@
-import 'dart:ui';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
-import '../constants/app_colors.dart';
 import '../providers/navigation_provider.dart';
 
+/// Floating footer navigation bar with a centered protruding add button.
+///
+/// Features:
+/// - Rounded black container with border
+/// - Home and Stats icons using image assets
+/// - Centered protruding circular add button
+/// - Responsive width (65% of screen, clamped to 200-280px)
+/// - Shadow effects for depth
 class FloatingNavigationBar extends StatelessWidget {
   final Function(NavigationTab) onTabSelected;
 
@@ -12,80 +18,118 @@ class FloatingNavigationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = CupertinoTheme.of(context).brightness == Brightness.dark;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final computedWidth = (screenWidth * 0.65).clamp(200.0, 280.0);
+    const barHeight = 58.0;
+    const totalHeight = 75.0;
 
     return Positioned(
       bottom: 30.0, // 30dp from bottom center
       left: 0,
       right: 0,
       child: Center(
-        child: Container(
-          width: 280.0,
-          height: 70.0,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(35.0),
-            color: isDark ? const Color(0xF21C1C1E) : const Color(0xF2FFFFFF),
-            border: Border.all(
-              color: isDark ? const Color(0x1AFFFFFF) : const Color(0x1A000000),
-              width: 0.5,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0x20000000),
-                blurRadius: 20.0,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(35.0),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? const Color(0xF21C1C1E)
-                      : const Color(0xF2FFFFFF),
-                  borderRadius: BorderRadius.circular(35.0),
-                ),
-                child: Consumer<NavigationProvider>(
-                  builder: (context, navigationProvider, child) {
-                    return Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        _NavigationButton(
-                          tab: NavigationTab.home,
-                          icon: CupertinoIcons.house_fill,
-                          size: 28.0,
-                          isActive: navigationProvider.isTabActive(
-                            NavigationTab.home,
-                          ),
-                          onTap: () => onTabSelected(NavigationTab.home),
-                        ),
-                        _NavigationButton(
-                          tab: NavigationTab.manage,
-                          icon: CupertinoIcons.plus_circle_fill,
-                          size: 32.0,
-                          isActive: navigationProvider.isTabActive(
-                            NavigationTab.manage,
-                          ),
-                          onTap: () => onTabSelected(NavigationTab.manage),
-                        ),
-                        _NavigationButton(
-                          tab: NavigationTab.stats,
-                          icon: CupertinoIcons.chart_bar_fill,
-                          size: 28.0,
-                          isActive: navigationProvider.isTabActive(
-                            NavigationTab.stats,
-                          ),
-                          onTap: () => onTabSelected(NavigationTab.stats),
+        child: SizedBox(
+          width: computedWidth,
+          height: totalHeight,
+          child: Consumer<NavigationProvider>(
+            builder: (context, navigationProvider, child) {
+              return Stack(
+                alignment: Alignment.bottomCenter,
+                children: [
+                  // Background rounded bar
+                  Container(
+                    width: computedWidth,
+                    height: barHeight,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1A1A1A),
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(30),
+                        topRight: Radius.circular(30),
+                        bottomLeft: Radius.circular(5),
+                        bottomRight: Radius.circular(5),
+                      ),
+                      border: Border.all(
+                        color: const Color(0xFF3A3A3A),
+                        width: 1,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.3),
+                          blurRadius: 15,
+                          offset: const Offset(0, 5),
                         ),
                       ],
-                    );
-                  },
-                ),
-              ),
-            ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          // Home icon (left)
+                          Expanded(
+                            child: _NavImageButton(
+                              activeImage: 'assets/icons/home-active.png',
+                              inactiveImage: 'assets/icons/home-inactive.png',
+                              onTap: () => onTabSelected(NavigationTab.home),
+                              isActive: navigationProvider.isTabActive(
+                                NavigationTab.home,
+                              ),
+                            ),
+                          ),
+                          // Placeholder space for centered add button
+                          const SizedBox(width: 50),
+                          // Stats icon (right)
+                          Expanded(
+                            child: _NavImageButton(
+                              activeImage: 'assets/icons/stats-active.png',
+                              inactiveImage: 'assets/icons/stats-inacative.png',
+                              onTap: () => onTabSelected(NavigationTab.stats),
+                              isActive: navigationProvider.isTabActive(
+                                NavigationTab.stats,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  // Protruding centered add button (circular white button)
+                  Positioned(
+                    top: 0, // Protrudes above the bar
+                    child: GestureDetector(
+                      onTap: () => onTabSelected(NavigationTab.manage),
+                      child: Container(
+                        width: 50,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: const Color(0xFF1A1A1A),
+                            width: 3,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.25),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          CupertinoIcons.add,
+                          color: Color(0xFF1A1A1A),
+                          size: 26,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
         ),
       ),
@@ -93,97 +137,35 @@ class FloatingNavigationBar extends StatelessWidget {
   }
 }
 
-class _NavigationButton extends StatefulWidget {
-  final NavigationTab tab;
-  final IconData icon;
-  final double size;
+/// Navigation icon button that switches between active/inactive images
+class _NavImageButton extends StatelessWidget {
+  final String activeImage;
+  final String inactiveImage;
+  final VoidCallback? onTap;
   final bool isActive;
-  final VoidCallback onTap;
 
-  const _NavigationButton({
-    required this.tab,
-    required this.icon,
-    required this.size,
-    required this.isActive,
-    required this.onTap,
+  const _NavImageButton({
+    super.key,
+    required this.activeImage,
+    required this.inactiveImage,
+    this.onTap,
+    this.isActive = false,
   });
-
-  @override
-  State<_NavigationButton> createState() => _NavigationButtonState();
-}
-
-class _NavigationButtonState extends State<_NavigationButton>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-  late Animation<double> _scaleAnimation;
-  @override
-  void initState() {
-    super.initState();
-    _animationController = AnimationController(
-      duration: const Duration(milliseconds: 200),
-      vsync: this,
-    );
-
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.1).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
-    );
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
-  }
-
-  @override
-  void didUpdateWidget(_NavigationButton oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
-    // Animate color change when active state changes
-    if (widget.isActive != oldWidget.isActive) {
-      if (widget.isActive) {
-        _animationController.forward();
-      } else {
-        _animationController.reverse();
-      }
-    }
-  }
-
-  void _handleTap() async {
-    // Scale animation on tap
-    await _animationController.forward();
-    await _animationController.reverse();
-
-    widget.onTap();
-  }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: _handleTap,
+      onTap: onTap,
       child: Container(
-        width: 50.0, // Touch target with proper spacing
-        height: 50.0,
-        decoration: const BoxDecoration(
-          shape: BoxShape.circle,
-          color: Colors.transparent,
-        ),
-        child: Center(
-          child: AnimatedBuilder(
-            animation: _animationController,
-            builder: (context, child) {
-              return Transform.scale(
-                scale: _scaleAnimation.value,
-                child: Icon(
-                  widget.icon,
-                  size: widget.size,
-                  color: widget.isActive
-                      ? AppColors.buttonActive
-                      : AppColors.buttonInactive,
-                ),
-              );
-            },
-          ),
+        width: 50,
+        height: 50,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(12)),
+        child: Image.asset(
+          isActive ? activeImage : inactiveImage,
+          width: 22,
+          height: 22,
+          fit: BoxFit.contain,
         ),
       ),
     );
