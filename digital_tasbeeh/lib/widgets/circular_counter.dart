@@ -1,11 +1,11 @@
 import 'dart:math' as math;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_text_styles.dart';
 import '../providers/counter_provider.dart';
+import '../providers/settings_provider.dart';
 
 class CircularCounter extends StatefulWidget {
   const CircularCounter({super.key});
@@ -126,11 +126,13 @@ class _CircularCounterState extends State<CircularCounter>
     }
     _lastTapTime = now;
     
-    // Haptic feedback
-    HapticFeedback.lightImpact();
-    
     final counterProvider = Provider.of<CounterProvider>(context, listen: false);
+    final settingsProvider = Provider.of<SettingsProvider>(context, listen: false);
     final wasRoundCompleted = counterProvider.isRoundCompleted;
+    
+    // Provide haptic and audio feedback based on settings
+    settingsProvider.provideHapticFeedback();
+    settingsProvider.provideAudioFeedback();
     
     // Increment counter
     final success = await counterProvider.increment();
@@ -148,6 +150,9 @@ class _CircularCounterState extends State<CircularCounter>
       
       // Handle round completion animation
       if (wasRoundCompleted) {
+        // Provide special haptic feedback for round completion
+        settingsProvider.provideHapticFeedback(type: HapticFeedbackType.medium);
+        
         _roundController.forward().then((_) {
           _roundController.reverse();
         });

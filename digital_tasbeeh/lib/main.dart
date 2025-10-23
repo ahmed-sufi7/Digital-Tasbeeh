@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'constants/app_colors.dart';
 import 'constants/app_text_styles.dart';
 import 'providers/counter_provider.dart';
+import 'providers/settings_provider.dart';
 import 'widgets/widgets.dart';
 
 void main() async {
@@ -38,6 +39,9 @@ class DigitalTasbeehApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(
           create: (context) => CounterProvider()..initialize(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => SettingsProvider()..initialize(),
         ),
       ],
       child: CupertinoApp(
@@ -153,45 +157,40 @@ class HomeScreen extends StatelessWidget {
               );
             }
 
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Tasbeeh name display
-                  Text(
-                    counterProvider.currentTasbeeh?.name ?? 'Digital Tasbeeh',
-                    style: AppTextStyles.tasbeehName(isDark),
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  
-                  const SizedBox(height: 60),
-                  
-                  // Main circular counter component
-                  const CircularCounter(),
-                  
-                  const SizedBox(height: 60),
-                  
-                  // Temporary action buttons (will be replaced by ActionBar in task 5)
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            return Stack(
+              children: [
+                // Main content
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      CupertinoButton(
-                        onPressed: counterProvider.currentCount > 0 
-                            ? () => counterProvider.decrement()
-                            : null,
-                        child: const Text('Undo'),
-                      ),
-                      CupertinoButton(
-                        onPressed: () => counterProvider.reset(),
-                        child: const Text('Reset'),
+                      // Space for ActionBar
+                      const SizedBox(height: 100),
+                      
+                      // Main circular counter component
+                      const CircularCounter(),
+                      
+                      const SizedBox(height: 40),
+                      
+                      // Tasbeeh name display
+                      Container(
+                        constraints: const BoxConstraints(maxWidth: 300),
+                        child: Text(
+                          counterProvider.currentTasbeeh?.name ?? 'Digital Tasbeeh',
+                          style: AppTextStyles.tasbeehName(isDark),
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                     ],
                   ),
-                ],
-              ),
+                ),
+                
+                // ActionBar positioned at the top
+                const ActionBar(),
+              ],
             );
           },
         ),
