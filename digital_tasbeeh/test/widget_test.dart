@@ -9,9 +9,14 @@ void main() {
     // Build our app and trigger a frame.
     await tester.pumpWidget(const DigitalTasbeehApp());
 
-    // Verify that our app loads with the home screen.
-    expect(find.text('Digital Tasbeeh'), findsOneWidget);
+    // Wait for the app to initialize
+    await tester.pumpAndSettle();
+
+    // Verify that our app loads with the counter at 0
     expect(find.text('0'), findsOneWidget);
-    expect(find.text('Coming Soon...'), findsOneWidget);
+    
+    // Verify that action buttons are present
+    expect(find.text('Undo'), findsOneWidget);
+    expect(find.text('Reset'), findsOneWidget);
   });
 }

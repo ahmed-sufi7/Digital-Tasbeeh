@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'constants/app_colors.dart';
 import 'constants/app_text_styles.dart';
+import 'providers/counter_provider.dart';
+import 'widgets/widgets.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,7 +34,13 @@ class DigitalTasbeehApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoApp(
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (context) => CounterProvider()..initialize(),
+        ),
+      ],
+      child: CupertinoApp(
         title: 'Digital Tasbeeh',
         debugShowCheckedModeBanner: false,
         theme: _buildCupertinoTheme(),
@@ -40,7 +48,8 @@ class DigitalTasbeehApp extends StatelessWidget {
         localizationsDelegates: const [
           DefaultCupertinoLocalizations.delegate,
         ],
-      );
+      ),
+    );
   }
 
   CupertinoThemeData _buildCupertinoTheme() {
@@ -116,52 +125,75 @@ class HomeScreen extends StatelessWidget {
     return CupertinoPageScaffold(
       backgroundColor: AppColors.backgroundColor(isDark),
       child: SafeArea(
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'Digital Tasbeeh',
-                style: AppTextStyles.navigationLargeTitle(isDark),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                'بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم',
-                style: AppTextStyles.bodyLarge(isDark),
-              ),
-              const SizedBox(height: 40),
-              Container(
-                width: 200,
-                height: 200,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppColors.surfaceColor(isDark),
-                  border: Border.all(
-                    color: AppColors.borderColor(isDark),
-                    width: 2,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.shadowColor(isDark),
-                      blurRadius: 10,
-                      offset: const Offset(0, 2),
+        child: Consumer<CounterProvider>(
+          builder: (context, counterProvider, child) {
+            if (counterProvider.isLoading) {
+              return const Center(
+                child: CupertinoActivityIndicator(),
+              );
+            }
+
+            if (counterProvider.error != null) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Error: ${counterProvider.error}',
+                      style: AppTextStyles.bodyMedium(isDark),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 20),
+                    CupertinoButton(
+                      onPressed: () => counterProvider.initialize(),
+                      child: const Text('Retry'),
                     ),
                   ],
                 ),
-                child: Center(
-                  child: Text(
-                    '0',
-                    style: AppTextStyles.counterLarge(isDark),
+              );
+            }
+
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Tasbeeh name display
+                  Text(
+                    counterProvider.currentTasbeeh?.name ?? 'Digital Tasbeeh',
+                    style: AppTextStyles.tasbeehName(isDark),
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
+                  
+                  const SizedBox(height: 60),
+                  
+                  // Main circular counter component
+                  const CircularCounter(),
+                  
+                  const SizedBox(height: 60),
+                  
+                  // Temporary action buttons (will be replaced by ActionBar in task 5)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      CupertinoButton(
+                        onPressed: counterProvider.currentCount > 0 
+                            ? () => counterProvider.decrement()
+                            : null,
+                        child: const Text('Undo'),
+                      ),
+                      CupertinoButton(
+                        onPressed: () => counterProvider.reset(),
+                        child: const Text('Reset'),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-              const SizedBox(height: 40),
-              Text(
-                'Coming Soon...',
-                style: AppTextStyles.bodyMedium(isDark),
-              ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
