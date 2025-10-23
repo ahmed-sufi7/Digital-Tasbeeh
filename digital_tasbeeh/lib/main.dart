@@ -3,19 +3,18 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'constants/app_colors.dart';
 import 'constants/app_text_styles.dart';
-import 'providers/counter_provider.dart';
-import 'providers/settings_provider.dart';
-import 'widgets/widgets.dart';
+import 'providers/providers.dart';
+import 'screens/screens.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Set preferred orientations
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
-  
+
   // Set system UI overlay style
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
@@ -26,7 +25,7 @@ void main() async {
       systemNavigationBarIconBrightness: Brightness.dark,
     ),
   );
-  
+
   runApp(const DigitalTasbeehApp());
 }
 
@@ -43,15 +42,14 @@ class DigitalTasbeehApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (context) => SettingsProvider()..initialize(),
         ),
+        ChangeNotifierProvider(create: (context) => NavigationProvider()),
       ],
       child: CupertinoApp(
         title: 'Digital Tasbeeh',
         debugShowCheckedModeBanner: false,
         theme: _buildCupertinoTheme(),
-        home: const HomeScreen(),
-        localizationsDelegates: const [
-          DefaultCupertinoLocalizations.delegate,
-        ],
+        home: const MainAppScreen(),
+        localizationsDelegates: const [DefaultCupertinoLocalizations.delegate],
       ),
     );
   }
@@ -112,87 +110,6 @@ class DigitalTasbeehApp extends StatelessWidget {
           fontSize: 21,
           fontWeight: FontWeight.w400,
           color: AppColors.lightTextPrimary,
-        ),
-      ),
-    );
-  }
-}
-
-// Temporary home screen placeholder - will be implemented in subsequent tasks
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = CupertinoTheme.of(context).brightness == Brightness.dark;
-    
-    return CupertinoPageScaffold(
-      backgroundColor: AppColors.backgroundColor(isDark),
-      child: SafeArea(
-        child: Consumer<CounterProvider>(
-          builder: (context, counterProvider, child) {
-            if (counterProvider.isLoading) {
-              return const Center(
-                child: CupertinoActivityIndicator(),
-              );
-            }
-
-            if (counterProvider.error != null) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Error: ${counterProvider.error}',
-                      style: AppTextStyles.bodyMedium(isDark),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 20),
-                    CupertinoButton(
-                      onPressed: () => counterProvider.initialize(),
-                      child: const Text('Retry'),
-                    ),
-                  ],
-                ),
-              );
-            }
-
-            return Stack(
-              children: [
-                // Main content
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // Space for ActionBar
-                      const SizedBox(height: 100),
-                      
-                      // Main circular counter component
-                      const CircularCounter(),
-                      
-                      const SizedBox(height: 40),
-                      
-                      // Tasbeeh name display
-                      Container(
-                        constraints: const BoxConstraints(maxWidth: 300),
-                        child: Text(
-                          counterProvider.currentTasbeeh?.name ?? 'Digital Tasbeeh',
-                          style: AppTextStyles.tasbeehName(isDark),
-                          textAlign: TextAlign.center,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                
-                // ActionBar positioned at the top
-                const ActionBar(),
-              ],
-            );
-          },
         ),
       ),
     );
