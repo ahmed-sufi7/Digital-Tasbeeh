@@ -1,9 +1,8 @@
 import 'dart:math' as math;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import '../constants/app_colors.dart';
-import '../constants/app_text_styles.dart';
 import '../providers/counter_provider.dart';
 import '../providers/settings_provider.dart';
 
@@ -16,241 +15,249 @@ class CircularCounter extends StatefulWidget {
 
 class _CircularCounterState extends State<CircularCounter>
     with TickerProviderStateMixin {
-  late AnimationController _progressController;
-  late AnimationController _countController;
-  late AnimationController _roundController;
-  late AnimationController _unlimitedController;
-  
-  late Animation<double> _progressAnimation;
-  late Animation<double> _countScaleAnimation;
-  late Animation<double> _roundScaleAnimation;
-  late Animation<double> _unlimitedRotationAnimation;
-  
   DateTime _lastTapTime = DateTime.now();
   static const Duration _doubleTapProtection = Duration(milliseconds: 100);
-  
+
   @override
   void initState() {
     super.initState();
     _initializeAnimations();
   }
-  
+
   void _initializeAnimations() {
-    // Progress ring animation controller
-    _progressController = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
-    );
-    
-    // Counter scale animation controller
-    _countController = AnimationController(
-      duration: const Duration(milliseconds: 150),
-      vsync: this,
-    );
-    
-    // Round completion animation controller
-    _roundController = AnimationController(
-      duration: const Duration(milliseconds: 400),
-      vsync: this,
-    );
-    
-    // Unlimited mode rotation controller
-    _unlimitedController = AnimationController(
-      duration: const Duration(seconds: 2),
-      vsync: this,
-    );
-    
-    // Progress animation with ease-out curve
-    _progressAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _progressController,
-      curve: Curves.easeOut,
-    ));
-    
-    // Count scale-pulse animation
-    _countScaleAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.1,
-    ).animate(CurvedAnimation(
-      parent: _countController,
-      curve: Curves.easeOut,
-    ));
-    
-    // Round scale-bounce animation
-    _roundScaleAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.2,
-    ).animate(CurvedAnimation(
-      parent: _roundController,
-      curve: Curves.elasticOut,
-    ));
-    
-    // Unlimited rotation animation
-    _unlimitedRotationAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _unlimitedController,
-      curve: Curves.linear,
-    ));
+    // Animations are handled by TweenAnimationBuilder in the display
   }
-  
-  @override
-  void dispose() {
-    _progressController.dispose();
-    _countController.dispose();
-    _roundController.dispose();
-    _unlimitedController.dispose();
-    super.dispose();
-  }
-  
-  double _getCounterDiameter(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    
-    // Responsive scaling based on screen width
-    if (screenWidth < 360) {
-      return 320.0; // Small screens
-    } else if (screenWidth > 480) {
-      return 420.0; // Large screens
-    } else {
-      return 380.0; // Medium screens (default)
-    }
-  }
-  
-  void _handleTap() async {
+
+  void _handleCounterTap() async {
     final now = DateTime.now();
     if (now.difference(_lastTapTime) < _doubleTapProtection) {
       return; // Prevent double-tap
     }
     _lastTapTime = now;
-    
-    final counterProvider = Provider.of<CounterProvider>(context, listen: false);
-    final settingsProvider = Provider.of<SettingsProvider>(context, listen: false);
-    final wasRoundCompleted = counterProvider.isRoundCompleted;
-    
-    // Provide haptic and audio feedback based on settings
+
+    final counterProvider = Provider.of<CounterProvider>(
+      context,
+      listen: false,
+    );
+    final settingsProvider = Provider.of<SettingsProvider>(
+      context,
+      listen: false,
+    );
+
+    // Counter tap feedback handled by TweenAnimationBuilder in display
+
+    // Provide haptic and audio feedback
     settingsProvider.provideHapticFeedback();
     settingsProvider.provideAudioFeedback();
-    
+
     // Increment counter
-    final success = await counterProvider.increment();
-    
-    if (success) {
-      // Trigger count scale animation
-      _countController.forward().then((_) {
-        _countController.reverse();
-      });
-      
-      // Update progress animation
-      if (!counterProvider.isUnlimited) {
-        _progressController.animateTo(counterProvider.progressPercentage);
-      }
-      
-      // Handle round completion animation
-      if (wasRoundCompleted) {
-        // Provide special haptic feedback for round completion
-        settingsProvider.provideHapticFeedback(type: HapticFeedbackType.medium);
-        
-        _roundController.forward().then((_) {
-          _roundController.reverse();
-        });
-      }
-      
-      // Handle unlimited mode rotation
-      if (counterProvider.isUnlimited) {
-        _unlimitedController.animateTo(counterProvider.unlimitedProgress);
-      }
-    }
+    await counterProvider.increment();
   }
-  
+
   @override
   Widget build(BuildContext context) {
     final isDark = CupertinoTheme.of(context).brightness == Brightness.dark;
-    final diameter = _getCounterDiameter(context);
-    
+
     return Consumer<CounterProvider>(
       builder: (context, counterProvider, child) {
         return GestureDetector(
-          onTap: _handleTap,
-          child: SizedBox(
-            width: diameter,
-            height: diameter,
-            child: Stack(
-              alignment: Alignment.center,
+          onTap: _handleCounterTap,
+          behavior: HitTestBehavior.opaque,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Horizontal Action Bar
+              _buildActionBar(isDark, counterProvider),
+              const SizedBox(height: 24),
+
+              // Clock-face Progress Ring with Counter
+              ClockFaceProgressRing(
+                progress: counterProvider.isUnlimited
+                    ? counterProvider.currentCount /
+                          100.0 // Non-resetting continuous progress
+                    : counterProvider.progressPercentage,
+                endpointProgress: counterProvider.isUnlimited
+                    ? counterProvider.currentCount /
+                          100.0 // Non-resetting continuous progress
+                    : counterProvider.progressPercentage,
+                currentCount: counterProvider.currentCount,
+                size: 280,
+                strokeWidth: 22,
+                showClockFace: true,
+                showMilestones: !counterProvider.isUnlimited,
+                milestones: const [100, 300, 500, 1000],
+                isUnlimited: counterProvider.isUnlimited,
+                child: _buildCounterDisplay(isDark, counterProvider),
+              ),
+
+              const SizedBox(height: 16),
+
+              // Bottom Label (Tasbeeh name)
+              _buildBottomLabel(isDark, counterProvider),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // Action Bar with Sound, Vibrate, Undo, Restart, Rate buttons
+  Widget _buildActionBar(bool isDark, CounterProvider counterProvider) {
+    return Consumer<SettingsProvider>(
+      builder: (context, settingsProvider, child) {
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          margin: const EdgeInsets.symmetric(horizontal: 40),
+          decoration: BoxDecoration(
+            color: const Color(0xFF3A3A3A).withValues(alpha: 0.3),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Sound button
+              _buildActionButton(
+                icon: CupertinoIcons.volume_up,
+                isActive: settingsProvider.soundEnabled,
+                onTap: () {
+                  settingsProvider.toggleSound();
+                  HapticFeedback.lightImpact();
+                },
+              ),
+              const SizedBox(width: 8),
+
+              // Vibrate button
+              _buildActionButton(
+                icon: CupertinoIcons.device_phone_portrait,
+                isActive: settingsProvider.vibrationEnabled,
+                onTap: () {
+                  settingsProvider.toggleVibration();
+                  HapticFeedback.lightImpact();
+                },
+              ),
+              const SizedBox(width: 8),
+
+              // Undo button (minus)
+              _buildActionButton(
+                icon: CupertinoIcons.minus,
+                isEnabled: counterProvider.currentCount > 0,
+                alwaysBlue: true,
+                onTap: () async {
+                  await counterProvider.decrement();
+                  HapticFeedback.lightImpact();
+                },
+              ),
+              const SizedBox(width: 8),
+
+              // Restart button
+              _buildActionButton(
+                icon: CupertinoIcons.arrow_clockwise,
+                isEnabled: counterProvider.currentCount > 0,
+                alwaysBlue: true,
+                onTap: () {
+                  _showResetDialog();
+                },
+              ),
+              const SizedBox(width: 8),
+
+              // Rate button
+              _buildActionButton(
+                icon: CupertinoIcons.star,
+                alwaysBlue: true,
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  // TODO: Implement rate app functionality
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildActionButton({
+    required IconData icon,
+    required VoidCallback onTap,
+    bool isEnabled = true,
+    bool isActive = false,
+    bool alwaysBlue = false,
+  }) {
+    return GestureDetector(
+      onTap: isEnabled ? onTap : null,
+      child: Icon(
+        icon,
+        size: 20,
+        color: (isActive || alwaysBlue)
+            ? const Color(0xFF1E90FF)
+            : Colors.white.withValues(alpha: 0.8),
+      ),
+    );
+  }
+
+  // Counter Display inside Progress Ring
+  Widget _buildCounterDisplay(bool isDark, CounterProvider counterProvider) {
+    final isUnlimited = counterProvider.isUnlimited;
+    final hasTarget = !isUnlimited && counterProvider.targetCount != null;
+    final showRounds = !isUnlimited && counterProvider.roundNumber > 1;
+
+    return TweenAnimationBuilder<double>(
+      duration: const Duration(milliseconds: 400),
+      curve: Curves.easeOut,
+      tween: Tween<double>(begin: 0.95, end: 1.0),
+      key: ValueKey<int>(counterProvider.currentCount),
+      builder: (context, scale, child) {
+        return Transform.scale(
+          scale: scale,
+          child: Opacity(
+            opacity: scale,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                // Custom painted counter with progress ring
-                AnimatedBuilder(
-                  animation: Listenable.merge([
-                    _progressAnimation,
-                    _unlimitedRotationAnimation,
-                  ]),
-                  builder: (context, child) {
-                    return CustomPaint(
-                      size: Size(diameter, diameter),
-                      painter: CounterPainter(
-                        progress: counterProvider.isUnlimited 
-                            ? _unlimitedRotationAnimation.value
-                            : _progressAnimation.value,
-                        completedSegments: counterProvider.completedSegments,
-                        isUnlimited: counterProvider.isUnlimited,
-                        isDark: isDark,
-                      ),
-                    );
-                  },
+                // Large count number
+                Text(
+                  '${counterProvider.currentCount}',
+                  style: const TextStyle(
+                    fontSize: 72,
+                    fontWeight: FontWeight.w200,
+                    color: Color(0xFF1E90FF),
+                    fontFeatures: [FontFeature.tabularFigures()],
+                    letterSpacing: -1.5,
+                    height: 1.0,
+                  ),
                 ),
-                
-                // Counter text display
-                AnimatedBuilder(
-                  animation: _countScaleAnimation,
-                  builder: (context, child) {
-                    return Transform.scale(
-                      scale: _countScaleAnimation.value,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // Current count
-                          Text(
-                            '${counterProvider.currentCount}',
-                            style: AppTextStyles.getCounterStyle(
-                              counterProvider.currentCount,
-                              isDark,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                          
-                          // Target count (if applicable)
-                          if (counterProvider.targetDisplayText.isNotEmpty)
-                            Text(
-                              counterProvider.targetDisplayText,
-                              style: AppTextStyles.targetCount(isDark),
-                              textAlign: TextAlign.center,
-                            ),
-                        ],
+
+                // Target count
+                if (hasTarget)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 3),
+                    child: Text(
+                      '/ ${counterProvider.targetCount}',
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w400,
+                        color: Color(0xFF8A8A8A),
+                        letterSpacing: 0,
+                        height: 1.2,
                       ),
-                    );
-                  },
-                ),
-                
-                // Round number display (positioned below counter)
-                if (counterProvider.roundDisplayText.isNotEmpty)
-                  Positioned(
-                    bottom: diameter * 0.15,
-                    child: AnimatedBuilder(
-                      animation: _roundScaleAnimation,
-                      builder: (context, child) {
-                        return Transform.scale(
-                          scale: _roundScaleAnimation.value,
-                          child: Text(
-                            counterProvider.roundDisplayText,
-                            style: AppTextStyles.roundNumber(isDark),
-                            textAlign: TextAlign.center,
-                          ),
-                        );
-                      },
                     ),
-                ),
+                  ),
+
+                // Rounds display
+                if (showRounds)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Text(
+                      'Round ${counterProvider.roundNumber}',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: Color(0xFF1E90FF),
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
@@ -258,182 +265,363 @@ class _CircularCounterState extends State<CircularCounter>
       },
     );
   }
+
+  // Bottom Label (Tasbeeh name)
+  Widget _buildBottomLabel(bool isDark, CounterProvider counterProvider) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 40),
+      child: Text(
+        counterProvider.currentTasbeeh?.name ??
+            'صَلَّى ٱللّٰهُ عَلَيْهِ وَآلِهِ وَسَلَّمَ',
+        style: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.w400,
+          color: isDark ? Colors.white : Colors.black,
+          letterSpacing: 0.5,
+          height: 1.3,
+        ),
+        textAlign: TextAlign.center,
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+      ),
+    );
+  }
+
+  void _showResetDialog() {
+    showCupertinoDialog(
+      context: context,
+      builder: (context) => CupertinoAlertDialog(
+        title: const Text('Reset Counter?'),
+        content: const Text('This will reset your current count to zero.'),
+        actions: [
+          CupertinoDialogAction(
+            child: const Text('Cancel'),
+            onPressed: () => Navigator.pop(context),
+          ),
+          CupertinoDialogAction(
+            isDestructiveAction: true,
+            child: const Text('Reset'),
+            onPressed: () {
+              Navigator.pop(context);
+              final counterProvider = Provider.of<CounterProvider>(
+                context,
+                listen: false,
+              );
+              counterProvider.reset();
+            },
+          ),
+        ],
+      ),
+    );
+  }
 }
 
-class CounterPainter extends CustomPainter {
+// Clock Face Progress Ring Widget
+class ClockFaceProgressRing extends StatelessWidget {
   final double progress;
-  final int completedSegments;
+  final double endpointProgress;
+  final int currentCount;
+  final double size;
+  final double strokeWidth;
+  final bool showClockFace;
+  final bool showMilestones;
+  final List<int> milestones;
   final bool isUnlimited;
-  final bool isDark;
-  
-  CounterPainter({
+  final Widget child;
+
+  const ClockFaceProgressRing({
+    super.key,
     required this.progress,
-    required this.completedSegments,
+    required this.endpointProgress,
+    required this.currentCount,
+    required this.size,
+    required this.strokeWidth,
+    required this.showClockFace,
+    required this.showMilestones,
+    required this.milestones,
     required this.isUnlimited,
-    required this.isDark,
+    required this.child,
   });
-  
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // Custom painted progress ring
+          CustomPaint(
+            size: Size(size, size),
+            painter: ClockFaceProgressPainter(
+              progress: progress,
+              endpointProgress: endpointProgress,
+              strokeWidth: strokeWidth,
+              showClockFace: showClockFace,
+              showMilestones: showMilestones,
+              milestones: milestones,
+              currentCount: currentCount,
+              isUnlimited: isUnlimited,
+            ),
+          ),
+
+          // Center content
+          child,
+        ],
+      ),
+    );
+  }
+}
+
+// Clock Face Progress Painter
+class ClockFaceProgressPainter extends CustomPainter {
+  final double progress;
+  final double endpointProgress;
+  final double strokeWidth;
+  final bool showClockFace;
+  final bool showMilestones;
+  final List<int> milestones;
+  final int currentCount;
+  final bool isUnlimited;
+
+  ClockFaceProgressPainter({
+    required this.progress,
+    required this.endpointProgress,
+    required this.strokeWidth,
+    required this.showClockFace,
+    required this.showMilestones,
+    required this.milestones,
+    required this.currentCount,
+    required this.isUnlimited,
+  });
+
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width / 2;
-    
+    final radius = (size.width - strokeWidth) / 2;
+
+    // Draw background circle
     _drawBackground(canvas, center, radius);
-    _drawTickMarks(canvas, center, radius);
-    _drawProgressRing(canvas, center, radius);
+
+    // Draw clock face marks
+    if (showClockFace) {
+      _drawClockFace(canvas, center, radius);
+    }
+
+    // Draw progress arc
+    _drawProgressArc(canvas, center, radius);
+
+    // Draw progress dots along the arc
     _drawProgressDots(canvas, center, radius);
-    _drawProgressHandle(canvas, center, radius);
-    _drawInnerCircle(canvas, center, radius);
+
+    // Draw milestones
+    if (showMilestones) {
+      _drawMilestones(canvas, center, radius);
+    }
+
+    // Draw progress endpoint
+    _drawProgressEndpoint(canvas, center, radius);
   }
-  
+
   void _drawBackground(Canvas canvas, Offset center, double radius) {
-    // Outer background track
-    final trackPaint = Paint()
-      ..color = AppColors.progressTrackColor(isDark)
+    // Draw grey background track for unprogressed ring
+    final backgroundPaint = Paint()
+      ..color = const Color(0xFF8E8E93)
+          .withValues(alpha: 0.3) // Grey color
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 14.0
+      ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round;
-    
-    canvas.drawCircle(center, radius - 7, trackPaint);
+
+    canvas.drawCircle(center, radius, backgroundPaint);
   }
-  
-  void _drawTickMarks(Canvas canvas, Offset center, double radius) {
-    final tickPaint = Paint()
-      ..color = AppColors.textSecondaryColor(isDark).withValues(alpha: 0.6)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.5;
-    
-    const tickCount = 100;
-    const tickLength = 12.0;
-    final tickRadius = 166.0;
-    
-    for (int i = 0; i < tickCount; i++) {
-      final angle = (i / tickCount) * 2 * math.pi - math.pi / 2;
-      final startX = center.dx + math.cos(angle) * (tickRadius - tickLength / 2);
-      final startY = center.dy + math.sin(angle) * (tickRadius - tickLength / 2);
-      final endX = center.dx + math.cos(angle) * (tickRadius + tickLength / 2);
-      final endY = center.dy + math.sin(angle) * (tickRadius + tickLength / 2);
-      
-      canvas.drawLine(
-        Offset(startX, startY),
-        Offset(endX, endY),
-        tickPaint,
+
+  void _drawClockFace(Canvas canvas, Offset center, double radius) {
+    // Draw 120 tick marks around the ring (exactly as in your design)
+    for (int i = 0; i < 120; i++) {
+      final isMajorTick = i % 10 == 0; // Every 10th tick is a major tick
+      final angle =
+          (i * 3 - 90) * math.pi / 180; // 3 degrees per tick, start at top
+
+      final tickPaint = Paint()
+        ..color = const Color(0xFF2A2A2A)
+            .withValues(alpha: 0.4) // Dark grey with 40% opacity
+        ..strokeWidth = isMajorTick
+            ? 2
+            : 1 // Major ticks are thicker
+        ..strokeCap = StrokeCap.round;
+
+      final tickLength = isMajorTick ? 12.0 : 8.0; // Major ticks are longer
+      final innerRadius = radius - strokeWidth / 2 - 10; // 10px gap from ring
+      final outerRadius = innerRadius - tickLength; // Tick extends inward
+
+      // Start point (closer to ring)
+      final startPoint = Offset(
+        center.dx + innerRadius * math.cos(angle),
+        center.dy + innerRadius * math.sin(angle),
       );
+
+      // End point (extends inward toward center)
+      final endPoint = Offset(
+        center.dx + outerRadius * math.cos(angle),
+        center.dy + outerRadius * math.sin(angle),
+      );
+
+      // Draw the tick line
+      canvas.drawLine(startPoint, endPoint, tickPaint);
     }
   }
-  
-  void _drawProgressRing(Canvas canvas, Offset center, double radius) {
-    if (progress <= 0) return;
-    
-    final progressPaint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 14.0
-      ..strokeCap = StrokeCap.round;
-    
+
+  void _drawProgressArc(Canvas canvas, Offset center, double radius) {
+    double actualProgress = progress;
+
+    // If unlimited mode, show continuous revolving progress
     if (isUnlimited) {
-      // Continuous rotation for unlimited mode
-      final gradient = SweepGradient(
-        startAngle: 0,
-        endAngle: 2 * math.pi,
-        colors: AppColors.primaryGradient,
-        transform: GradientRotation(progress * 2 * math.pi),
-      );
-      
-      progressPaint.shader = gradient.createShader(
-        Rect.fromCircle(center: center, radius: radius - 7),
-      );
-      
-      canvas.drawCircle(center, radius - 7, progressPaint);
-    } else {
-      // Progress arc for limited mode
-      progressPaint.color = AppColors.progressActive;
-      
-      final rect = Rect.fromCircle(center: center, radius: radius - 7);
-      const startAngle = -math.pi / 2; // Start from top
-      final sweepAngle = progress * 2 * math.pi;
-      
-      canvas.drawArc(rect, startAngle, sweepAngle, false, progressPaint);
+      // Show continuous non-resetting progress - keeps growing beyond 100%
+      actualProgress = currentCount / 100.0;
+
+      // Draw completed full revolutions as background rings
+      final completedRevolutions = (currentCount / 100).floor();
+      if (completedRevolutions > 0) {
+        final backgroundPaint = Paint()
+          ..color = const Color(0xFF1E90FF).withValues(alpha: 0.4)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = strokeWidth
+          ..strokeCap = StrokeCap.round;
+
+        final rect = Rect.fromCircle(center: center, radius: radius);
+        const startAngle = -math.pi / 2;
+        const fullCircle = 2 * math.pi;
+
+        // Draw the background ring showing completed revolutions
+        canvas.drawArc(rect, startAngle, fullCircle, false, backgroundPaint);
+      }
     }
+
+    // For testing: show minimum progress if there's any count
+    if (actualProgress <= 0 && currentCount > 0) {
+      actualProgress = 0.05; // Show 5% minimum progress for visibility
+    }
+
+    if (actualProgress <= 0) return;
+
+    // ===== BLUE PROGRESS ARC =====
+    // Main progress arc in blue (#1E90FF)
+    final progressPaint = Paint()
+      ..color =
+          const Color(0xFF1E90FF) // Primary accent blue
+      ..style = PaintingStyle.stroke
+      ..strokeWidth =
+          strokeWidth // Same width as background ring
+      ..strokeCap = StrokeCap.round; // Rounded ends
+
+    final rect = Rect.fromCircle(center: center, radius: radius);
+
+    // Draw the arc from 12 o'clock position, clockwise
+    canvas.drawArc(
+      rect,
+      -math.pi / 2, // Start at top (12 o'clock = -90 degrees)
+      2 *
+          math.pi *
+          actualProgress, // Sweep angle - NO RESET, continuous progress
+      false, // Don't use center (creates arc, not pie slice)
+      progressPaint,
+    );
   }
-  
+
   void _drawProgressDots(Canvas canvas, Offset center, double radius) {
-    if (isUnlimited || completedSegments <= 0) return;
-    
+    if (progress <= 0) return; // Don't draw if no progress
+
+    // ===== WHITE DOTS ON PROGRESS RING =====
+    // Small white dots layered on top of the blue arc
+    final dotCount = 120; // 120 dots around the full circle
+    final dotRadius = 1.5; // Small dots (1.5px radius)
     final dotPaint = Paint()
-      ..color = AppColors.progressActive
+      ..color = Colors
+          .white // White to stand out on blue
       ..style = PaintingStyle.fill;
-    
-    const totalDots = 33;
-    const dotRadius = 3.0;
-    final dotCircleRadius = radius - 7;
-    
-    for (int i = 0; i < completedSegments && i < totalDots; i++) {
-      final angle = (i / totalDots) * 2 * math.pi - math.pi / 2;
-      final dotX = center.dx + math.cos(angle) * dotCircleRadius;
-      final dotY = center.dy + math.sin(angle) * dotCircleRadius;
-      
+
+    // Calculate actual progress for dot display
+    double actualProgress = progress;
+    if (isUnlimited) {
+      actualProgress =
+          currentCount / 100.0; // Continuous progress without reset
+    }
+
+    // Draw dots only where progress exists
+    // For continuous progress > 1.0, we need to handle multiple revolutions
+    final totalDotsToShow = (actualProgress * dotCount).floor();
+
+    for (int i = 0; i < totalDotsToShow; i++) {
+      final dotIndex = i % dotCount; // Wrap around for multiple revolutions
+      final dotProgress =
+          dotIndex / dotCount; // Position of this dot (0.0 to 1.0)
+
+      final angle = -math.pi / 2 + (2 * math.pi * dotProgress);
+      final dotX = center.dx + radius * math.cos(angle);
+      final dotY = center.dy + radius * math.sin(angle);
+
       canvas.drawCircle(Offset(dotX, dotY), dotRadius, dotPaint);
     }
   }
-  
-  void _drawProgressHandle(Canvas canvas, Offset center, double radius) {
-    if (progress <= 0 && !isUnlimited) return;
-    
-    final handleRadius = radius - 7;
-    final angle = isUnlimited 
-        ? progress * 2 * math.pi - math.pi / 2
-        : progress * 2 * math.pi - math.pi / 2;
-    
-    final handleX = center.dx + math.cos(angle) * handleRadius;
-    final handleY = center.dy + math.sin(angle) * handleRadius;
-    final handleCenter = Offset(handleX, handleY);
-    
-    // Handle shadow
-    final shadowPaint = Paint()
-      ..color = Colors.black.withValues(alpha: 0.2)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
-    
-    canvas.drawCircle(
-      Offset(handleCenter.dx, handleCenter.dy + 2),
-      10.0,
-      shadowPaint,
-    );
-    
-    // Handle
-    final handlePaint = Paint()
-      ..color = CupertinoColors.white
+
+  void _drawMilestones(Canvas canvas, Offset center, double radius) {
+    final milestonePaint = Paint()
+      ..color = const Color(0xFF1E90FF)
       ..style = PaintingStyle.fill;
-    
-    canvas.drawCircle(handleCenter, 10.0, handlePaint);
+
+    for (final milestone in milestones) {
+      if (currentCount >= milestone) {
+        final angle = -math.pi / 2; // Position at top for now
+        final milestoneX = center.dx + math.cos(angle) * radius;
+        final milestoneY = center.dy + math.sin(angle) * radius;
+
+        canvas.drawCircle(Offset(milestoneX, milestoneY), 4, milestonePaint);
+      }
+    }
   }
-  
-  void _drawInnerCircle(Canvas canvas, Offset center, double radius) {
-    final innerRadius = 176.0; // 352dp diameter = 176dp radius
-    
-    // Inner circle shadow
-    final shadowPaint = Paint()
-      ..color = Colors.black.withValues(alpha: 0.1)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 20);
-    
-    canvas.drawCircle(
-      Offset(center.dx, center.dy - 5),
-      innerRadius,
-      shadowPaint,
-    );
-    
-    // Inner circle
-    final innerPaint = Paint()
-      ..color = isDark ? AppColors.darkSurface : CupertinoColors.white
-      ..style = PaintingStyle.fill;
-    
-    canvas.drawCircle(center, innerRadius, innerPaint);
+
+  void _drawProgressEndpoint(Canvas canvas, Offset center, double radius) {
+    // ===== ENDPOINT BADGE (PROGRESS INDICATOR) =====
+    // Blue circular badge with white center dot at the end of progress arc
+    if (endpointProgress > 0) {
+      // Use modulo to handle values > 1.0 (for continuous rotation)
+      final normalizedProgress = endpointProgress % 1.0;
+      final endAngle = -math.pi / 2 + (2 * math.pi * normalizedProgress);
+      final badgeRadius = radius;
+      final badgeX = center.dx + badgeRadius * math.cos(endAngle);
+      final badgeY = center.dy + badgeRadius * math.sin(endAngle);
+
+      // Outer blue circle (badge container)
+      final badgePaint = Paint()
+        ..color =
+            const Color(0xFF1E90FF) // Same blue as progress arc
+        ..style = PaintingStyle.fill;
+
+      canvas.drawCircle(
+        Offset(badgeX, badgeY),
+        16, // 16px radius for outer circle
+        badgePaint,
+      );
+
+      // Inner white circle (indicator dot)
+      final iconPaint = Paint()
+        ..color = Colors.white
+        ..style = PaintingStyle.fill;
+
+      canvas.drawCircle(
+        Offset(badgeX, badgeY),
+        4, // 4px radius for inner white dot
+        iconPaint,
+      );
+    }
   }
-  
+
   @override
-  bool shouldRepaint(CounterPainter oldDelegate) {
+  bool shouldRepaint(ClockFaceProgressPainter oldDelegate) {
     return oldDelegate.progress != progress ||
-           oldDelegate.completedSegments != completedSegments ||
-           oldDelegate.isUnlimited != isUnlimited ||
-           oldDelegate.isDark != isDark;
+        oldDelegate.endpointProgress != endpointProgress ||
+        oldDelegate.currentCount != currentCount ||
+        oldDelegate.isUnlimited != isUnlimited;
   }
 }

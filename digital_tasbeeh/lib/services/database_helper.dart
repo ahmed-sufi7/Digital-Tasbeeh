@@ -67,10 +67,18 @@ class DatabaseHelper {
     ''');
 
     // Create indexes for better performance
-    await db.execute('CREATE INDEX idx_count_history_tasbeeh_id ON count_history(tasbeeh_id)');
-    await db.execute('CREATE INDEX idx_count_history_timestamp ON count_history(timestamp)');
-    await db.execute('CREATE INDEX idx_tasbeehs_last_used ON tasbeehs(last_used_at)');
-    await db.execute('CREATE INDEX idx_tasbeehs_is_default ON tasbeehs(is_default)');
+    await db.execute(
+      'CREATE INDEX idx_count_history_tasbeeh_id ON count_history(tasbeeh_id)',
+    );
+    await db.execute(
+      'CREATE INDEX idx_count_history_timestamp ON count_history(timestamp)',
+    );
+    await db.execute(
+      'CREATE INDEX idx_tasbeehs_last_used ON tasbeehs(last_used_at)',
+    );
+    await db.execute(
+      'CREATE INDEX idx_tasbeehs_is_default ON tasbeehs(is_default)',
+    );
 
     // Insert default Tasbeehs
     await _insertDefaultTasbeehs(db);
@@ -86,12 +94,12 @@ class DatabaseHelper {
 
   Future<void> _insertDefaultTasbeehs(Database db) async {
     final now = DateTime.now().toIso8601String();
-    
+
     final defaultTasbeehs = [
       {
         'id': 'default_sallallahu_alayhi_wasallam',
         'name': 'Sallallahu Alayhi Wasallam',
-        'target_count': null,
+        'target_count': 100, // Changed from null to 100 to show progress
         'current_count': 0,
         'round_number': 1,
         'created_at': now,
@@ -156,7 +164,7 @@ class DatabaseHelper {
   Future<void> resetDatabase() async {
     final databasesPath = await getDatabasesPath();
     final path = join(databasesPath, 'digital_tasbeeh.db');
-    
+
     await close();
     await deleteDatabase(path);
     _database = await _initDatabase();
