@@ -4,6 +4,7 @@ import '../constants/app_colors.dart';
 import '../constants/app_text_styles.dart';
 import '../providers/counter_provider.dart';
 import '../widgets/circular_counter.dart';
+import '../widgets/ios_header.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -14,66 +15,84 @@ class HomeScreen extends StatelessWidget {
 
     return CupertinoPageScaffold(
       backgroundColor: AppColors.backgroundColor(isDark),
-      child: SafeArea(
-        child: Consumer<CounterProvider>(
-          builder: (context, counterProvider, child) {
-            if (counterProvider.isLoading) {
-              return const Center(child: CupertinoActivityIndicator());
-            }
+      child: Consumer<CounterProvider>(
+        builder: (context, counterProvider, child) {
+          if (counterProvider.isLoading) {
+            return const Center(child: CupertinoActivityIndicator());
+          }
 
-            if (counterProvider.error != null) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Error: ${counterProvider.error}',
-                      style: AppTextStyles.bodyMedium(isDark),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 20),
-                    CupertinoButton(
-                      onPressed: () => counterProvider.initialize(),
-                      child: const Text('Retry'),
-                    ),
-                  ],
-                ),
-              );
-            }
-
-            return Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 20.0, // 20dp horizontal padding
-                vertical: 40.0, // 40dp vertical padding
-              ),
+          if (counterProvider.error != null) {
+            return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Main Arabic heading
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 32),
-                    child: Text(
-                      'إِنَّ اللَّهَ وَمَلَائِكَتَهُ يُصَلُّونَ عَلَى النَّبِيِّ ۚ يَا أَيُّهَا الَّذِينَ آمَنُوا صَلُّوا عَلَيْهِ وَسَلِّمُوا تَسْلِيمًا',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF1E90FF),
-                        height: 1.4,
-                        letterSpacing: 0.2,
-                      ),
-                    ),
+                  Text(
+                    'Error: ${counterProvider.error}',
+                    style: AppTextStyles.bodyMedium(isDark),
+                    textAlign: TextAlign.center,
                   ),
-
-                  const SizedBox(height: 24),
-
-                  // Main circular counter component (includes action bar)
-                  const Expanded(child: CircularCounter()),
+                  const SizedBox(height: 20),
+                  CupertinoButton(
+                    onPressed: () => counterProvider.initialize(),
+                    child: const Text('Retry'),
+                  ),
                 ],
               ),
             );
-          },
-        ),
+          }
+
+          return Column(
+            children: [
+              // iOS-style header
+              IOSHeader(
+                title: 'Digital Tasbeeh',
+                trailing: [
+                  IOSHeaderButton(
+                    icon: CupertinoIcons.settings,
+                    onPressed: () {
+                      // TODO: Navigate to settings
+                    },
+                  ),
+                ],
+              ),
+
+              // Main content
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20.0,
+                    vertical: 20.0,
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Main Arabic heading
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 32),
+                        child: Text(
+                          'إِنَّ اللَّهَ وَمَلَائِكَتَهُ يُصَلُّونَ عَلَى النَّبِيِّ ۚ يَا أَيُّهَا الَّذِينَ آمَنُوا صَلُّوا عَلَيْهِ وَسَلِّمُوا تَسْلِيمًا',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF1E90FF),
+                            height: 1.4,
+                            letterSpacing: 0.2,
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      // Main circular counter component (includes action bar)
+                      const Expanded(child: CircularCounter()),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
