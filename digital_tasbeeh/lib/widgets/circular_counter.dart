@@ -28,6 +28,31 @@ class _CircularCounterState extends State<CircularCounter>
     // Animations are handled by TweenAnimationBuilder in the display
   }
 
+  // Calculate font size based on number of digits
+  double _getCounterFontSize(int count) {
+    final digitCount = count.toString().length;
+
+    // Dynamic font sizing based on digit count
+    switch (digitCount) {
+      case 1: // 1-9
+        return 72.0;
+      case 2: // 10-99
+        return 68.0;
+      case 3: // 100-999
+        return 64.0;
+      case 4: // 1000-9999
+        return 58.0;
+      case 5: // 10000-99999
+        return 52.0;
+      case 6: // 100000-999999
+        return 46.0;
+      case 7: // 1000000-9999999
+        return 40.0;
+      default: // 8+ digits
+        return 36.0;
+    }
+  }
+
   void _handleCounterTap() async {
     final now = DateTime.now();
     if (now.difference(_lastTapTime) < _doubleTapProtection) {
@@ -215,17 +240,19 @@ class _CircularCounterState extends State<CircularCounter>
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Large count number
-                Text(
-                  '${counterProvider.currentCount}',
-                  style: const TextStyle(
-                    fontSize: 72,
+                // Large count number with dynamic font size
+                AnimatedDefaultTextStyle(
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                  style: TextStyle(
+                    fontSize: _getCounterFontSize(counterProvider.currentCount),
                     fontWeight: FontWeight.w200,
-                    color: Color(0xFF1E90FF),
-                    fontFeatures: [FontFeature.tabularFigures()],
+                    color: const Color(0xFF1E90FF),
+                    fontFeatures: const [FontFeature.tabularFigures()],
                     letterSpacing: -1.5,
                     height: 1.0,
                   ),
+                  child: Text('${counterProvider.currentCount}'),
                 ),
 
                 // Target count
