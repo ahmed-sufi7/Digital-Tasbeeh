@@ -133,7 +133,7 @@ class _CircularCounterState extends State<CircularCounter>
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           margin: const EdgeInsets.symmetric(horizontal: 40),
           decoration: BoxDecoration(
-            color: const Color(0xFF3A3A3A).withValues(alpha: 0.3),
+            color: const Color(0xFF8E8E93).withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(16),
           ),
           child: Row(
