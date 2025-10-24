@@ -21,7 +21,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -87,8 +87,36 @@ class DatabaseHelper {
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     // Handle database migrations here
     if (oldVersion < 2) {
-      // Example migration for version 2
-      // await db.execute('ALTER TABLE tasbeehs ADD COLUMN new_column TEXT');
+      // Update default Tasbeehs with Arabic names and correct target counts
+      await _updateDefaultTasbeehs(db);
+    }
+  }
+
+  Future<void> _updateDefaultTasbeehs(Database db) async {
+    // Update existing default Tasbeehs with Arabic names and correct target counts
+    final updates = [
+      {
+        'id': 'default_sallallahu_alayhi_wasallam',
+        'name': 'صلى الله عليه وسلم',
+        'target_count': null, // Unlimited
+      },
+      {'id': 'default_subhanallah', 'name': 'سبحان الله', 'target_count': 33},
+      {'id': 'default_allahu_akbar', 'name': 'الله أكبر', 'target_count': 33},
+      {'id': 'default_alhamdulillah', 'name': 'الحمد لله', 'target_count': 33},
+      {
+        'id': 'default_la_ilaha_illa_allah',
+        'name': 'لا إله إلا الله',
+        'target_count': 100,
+      },
+    ];
+
+    for (final update in updates) {
+      await db.update(
+        'tasbeehs',
+        {'name': update['name'], 'target_count': update['target_count']},
+        where: 'id = ?',
+        whereArgs: [update['id']],
+      );
     }
   }
 
@@ -98,8 +126,8 @@ class DatabaseHelper {
     final defaultTasbeehs = [
       {
         'id': 'default_sallallahu_alayhi_wasallam',
-        'name': 'Sallallahu Alayhi Wasallam',
-        'target_count': 100, // Changed from null to 100 to show progress
+        'name': 'صلى الله عليه وسلم',
+        'target_count': null, // Unlimited count for continuous dhikr
         'current_count': 0,
         'round_number': 1,
         'created_at': now,
@@ -108,7 +136,7 @@ class DatabaseHelper {
       },
       {
         'id': 'default_subhanallah',
-        'name': 'SubhanAllah',
+        'name': 'سبحان الله',
         'target_count': 33,
         'current_count': 0,
         'round_number': 1,
@@ -118,7 +146,7 @@ class DatabaseHelper {
       },
       {
         'id': 'default_allahu_akbar',
-        'name': 'Allahu Akbar',
+        'name': 'الله أكبر',
         'target_count': 33,
         'current_count': 0,
         'round_number': 1,
@@ -128,7 +156,7 @@ class DatabaseHelper {
       },
       {
         'id': 'default_alhamdulillah',
-        'name': 'Alhamdulillah',
+        'name': 'الحمد لله',
         'target_count': 33,
         'current_count': 0,
         'round_number': 1,
@@ -138,7 +166,7 @@ class DatabaseHelper {
       },
       {
         'id': 'default_la_ilaha_illa_allah',
-        'name': 'La ilaha illa Allah',
+        'name': 'لا إله إلا الله',
         'target_count': 100,
         'current_count': 0,
         'round_number': 1,

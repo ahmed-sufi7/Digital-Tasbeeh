@@ -34,17 +34,10 @@ class _ManageTasbeehScreenState extends State<ManageTasbeehScreen> {
       navigationBar: CupertinoNavigationBar(
         backgroundColor: AppColors.surfaceColor(isDark).withOpacity(0.9),
         border: null,
-        leading: Transform.translate(
-          offset: const Offset(-8, 0),
-          child: CupertinoButton(
-            padding: const EdgeInsets.all(8),
-            onPressed: () => Navigator.pop(context),
-            child: Icon(
-              CupertinoIcons.back,
-              color: AppColors.primary,
-              size: 24,
-            ),
-          ),
+        leading: CupertinoButton(
+          padding: const EdgeInsets.only(left: 8, right: 16, top: 8, bottom: 8),
+          onPressed: () => Navigator.pop(context),
+          child: Icon(CupertinoIcons.back, color: AppColors.primary, size: 24),
         ),
         middle: Text(
           'Manage Tasbeehs',
@@ -56,13 +49,10 @@ class _ManageTasbeehScreenState extends State<ManageTasbeehScreen> {
             letterSpacing: -0.4,
           ),
         ),
-        trailing: Transform.translate(
-          offset: const Offset(8, 0),
-          child: CupertinoButton(
-            padding: const EdgeInsets.all(8),
-            onPressed: () => _showCreateTasbeehModal(context),
-            child: Icon(CupertinoIcons.add, color: AppColors.primary, size: 28),
-          ),
+        trailing: CupertinoButton(
+          padding: const EdgeInsets.only(left: 16, right: 8, top: 8, bottom: 8),
+          onPressed: () => _showCreateTasbeehModal(context),
+          child: Icon(CupertinoIcons.add, color: AppColors.primary, size: 28),
         ),
       ),
       child: SafeArea(
@@ -454,16 +444,16 @@ class _ManageTasbeehScreenState extends State<ManageTasbeehScreen> {
   IconData _getTasbeehIcon(Tasbeeh tasbeeh) {
     // Return appropriate icons for different Tasbeehs
     if (tasbeeh.isDefault) {
-      switch (tasbeeh.name.toLowerCase()) {
-        case 'sallallahu alayhi wasallam':
+      switch (tasbeeh.id) {
+        case 'default_sallallahu_alayhi_wasallam':
           return CupertinoIcons.star_fill;
-        case 'subhanallah':
+        case 'default_subhanallah':
           return CupertinoIcons.moon_stars_fill;
-        case 'allahu akbar':
+        case 'default_allahu_akbar':
           return CupertinoIcons.sun_max_fill;
-        case 'alhamdulillah':
+        case 'default_alhamdulillah':
           return CupertinoIcons.heart_fill;
-        case 'la ilaha illa allah':
+        case 'default_la_ilaha_illa_allah':
           return CupertinoIcons.sparkles;
         default:
           return CupertinoIcons.book_fill;

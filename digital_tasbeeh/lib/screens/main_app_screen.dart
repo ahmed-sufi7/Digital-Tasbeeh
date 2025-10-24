@@ -52,6 +52,17 @@ class _MainAppScreenState extends State<MainAppScreen>
       listen: false,
     );
 
+    if (tab == NavigationTab.manage) {
+      // Open manage screen as modal with slide-up transition
+      Navigator.of(context).push(
+        CupertinoPageRoute(
+          builder: (context) => const ManageTasbeehScreen(),
+          fullscreenDialog: true,
+        ),
+      );
+      return;
+    }
+
     if (navigationProvider.currentTab != tab) {
       // Fade out current screen
       await _fadeController.reverse();
@@ -59,9 +70,10 @@ class _MainAppScreenState extends State<MainAppScreen>
       // Update navigation state
       navigationProvider.setTab(tab);
 
-      // Navigate to new page
+      // Navigate to new page (only for home and stats now)
+      final pageIndex = tab == NavigationTab.home ? 0 : 1;
       await _pageController.animateToPage(
-        tab.index,
+        pageIndex,
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
@@ -87,11 +99,7 @@ class _MainAppScreenState extends State<MainAppScreen>
                     controller: _pageController,
                     physics:
                         const NeverScrollableScrollPhysics(), // Disable swipe navigation
-                    children: const [
-                      HomeScreen(),
-                      ManageTasbeehScreen(),
-                      StatsScreen(),
-                    ],
+                    children: const [HomeScreen(), StatsScreen()],
                   ),
                 );
               },
