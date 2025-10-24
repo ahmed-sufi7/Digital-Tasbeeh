@@ -32,7 +32,7 @@ class _ManageTasbeehScreenState extends State<ManageTasbeehScreen> {
     return CupertinoPageScaffold(
       backgroundColor: AppColors.backgroundColor(isDark),
       navigationBar: CupertinoNavigationBar(
-        backgroundColor: AppColors.surfaceColor(isDark).withOpacity(0.9),
+        backgroundColor: AppColors.surfaceColor(isDark).withValues(alpha: 0.9),
         border: null,
         leading: CupertinoButton(
           padding: const EdgeInsets.only(left: 8, right: 16, top: 8, bottom: 8),
@@ -99,7 +99,7 @@ class _ManageTasbeehScreenState extends State<ManageTasbeehScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: CupertinoColors.black.withOpacity(0.05),
+            color: CupertinoColors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -218,7 +218,7 @@ class _ManageTasbeehScreenState extends State<ManageTasbeehScreen> {
           margin: const EdgeInsets.only(bottom: 12),
           decoration: BoxDecoration(
             color: isSelected
-                ? AppColors.primary.withOpacity(0.1)
+                ? AppColors.primary.withValues(alpha: 0.1)
                 : AppColors.surfaceColor(isDark),
             borderRadius: BorderRadius.circular(12),
             border: isSelected
@@ -226,7 +226,7 @@ class _ManageTasbeehScreenState extends State<ManageTasbeehScreen> {
                 : null,
             boxShadow: [
               BoxShadow(
-                color: CupertinoColors.black.withOpacity(0.05),
+                color: CupertinoColors.black.withValues(alpha: 0.05),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -236,29 +236,29 @@ class _ManageTasbeehScreenState extends State<ManageTasbeehScreen> {
             padding: EdgeInsets.zero,
             onPressed: () => _selectTasbeeh(context, tasbeeh),
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(12),
               child: Row(
                 children: [
                   // Leading Icon
                   Container(
-                    width: 48,
-                    height: 48,
+                    width: 36,
+                    height: 36,
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? AppColors.primary.withOpacity(0.2)
-                          : AppColors.primary.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
+                          ? AppColors.primary.withValues(alpha: 0.2)
+                          : AppColors.primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(
                       _getTasbeehIcon(tasbeeh),
                       color: isSelected
                           ? AppColors.primary
-                          : AppColors.primary.withOpacity(0.7),
-                      size: 24,
+                          : AppColors.primary.withValues(alpha: 0.7),
+                      size: 18,
                     ),
                   ),
 
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 12),
 
                   // Content
                   Expanded(
@@ -269,7 +269,7 @@ class _ManageTasbeehScreenState extends State<ManageTasbeehScreen> {
                         Text(
                           tasbeeh.name,
                           style: TextStyle(
-                            fontSize: 18,
+                            fontSize: 16,
                             fontWeight: FontWeight.w500,
                             color: isSelected
                                 ? AppColors.primary
@@ -278,7 +278,7 @@ class _ManageTasbeehScreenState extends State<ManageTasbeehScreen> {
                           ),
                         ),
 
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 2),
 
                         // Target Count
                         Text(
@@ -286,7 +286,7 @@ class _ManageTasbeehScreenState extends State<ManageTasbeehScreen> {
                               ? 'Unlimited'
                               : '${tasbeeh.targetCount} counts',
                           style: TextStyle(
-                            fontSize: 14,
+                            fontSize: 13,
                             color: AppColors.textSecondaryColor(isDark),
                             fontFamily: AppTextStyles.fontFamily,
                           ),
@@ -306,18 +306,18 @@ class _ManageTasbeehScreenState extends State<ManageTasbeehScreen> {
                         child: Icon(
                           CupertinoIcons.checkmark_circle_fill,
                           color: AppColors.primary,
-                          size: 24,
+                          size: 20,
                         ),
                       ),
 
                       // More Options
                       CupertinoButton(
-                        padding: const EdgeInsets.only(left: 8),
+                        padding: const EdgeInsets.only(left: 6),
                         onPressed: () => _showTasbeehOptions(context, tasbeeh),
                         child: Icon(
                           CupertinoIcons.ellipsis,
                           color: AppColors.textSecondaryColor(isDark),
-                          size: 20,
+                          size: 18,
                         ),
                       ),
                     ],
@@ -436,7 +436,8 @@ class _ManageTasbeehScreenState extends State<ManageTasbeehScreen> {
           return CupertinoIcons.book_fill;
       }
     }
-    return CupertinoIcons.book;
+    // Use filled icon for custom Tasbeehs to match preset styling
+    return CupertinoIcons.book_fill;
   }
 
   void _selectTasbeeh(BuildContext context, Tasbeeh tasbeeh) {
