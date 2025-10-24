@@ -65,7 +65,7 @@ class _TasbeehFormModalState extends State<TasbeehFormModal> {
     return CupertinoPageScaffold(
       backgroundColor: AppColors.backgroundColor(isDark),
       navigationBar: CupertinoNavigationBar(
-        backgroundColor: AppColors.surfaceColor(isDark).withOpacity(0.9),
+        backgroundColor: AppColors.surfaceColor(isDark).withValues(alpha: 0.9),
         border: null,
         leading: CupertinoButton(
           padding: EdgeInsets.zero,
@@ -172,7 +172,7 @@ class _TasbeehFormModalState extends State<TasbeehFormModal> {
             : null,
         boxShadow: [
           BoxShadow(
-            color: CupertinoColors.black.withOpacity(0.05),
+            color: CupertinoColors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -232,7 +232,7 @@ class _TasbeehFormModalState extends State<TasbeehFormModal> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: CupertinoColors.black.withOpacity(0.05),
+            color: CupertinoColors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -255,7 +255,7 @@ class _TasbeehFormModalState extends State<TasbeehFormModal> {
                     child: Text(
                       _countOptions[i],
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: 12,
                         fontFamily: AppTextStyles.fontFamily,
                       ),
                     ),
@@ -302,7 +302,7 @@ class _TasbeehFormModalState extends State<TasbeehFormModal> {
             : null,
         boxShadow: [
           BoxShadow(
-            color: CupertinoColors.black.withOpacity(0.05),
+            color: CupertinoColors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -328,7 +328,7 @@ class _TasbeehFormModalState extends State<TasbeehFormModal> {
               color: AppColors.surfaceColor(isDark),
               borderRadius: BorderRadius.circular(12),
             ),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             keyboardType: TextInputType.number,
             inputFormatters: [
               FilteringTextInputFormatter.digitsOnly,
@@ -363,7 +363,7 @@ class _TasbeehFormModalState extends State<TasbeehFormModal> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.primary.withOpacity(0.1),
+        color: AppColors.primary.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -380,7 +380,7 @@ class _TasbeehFormModalState extends State<TasbeehFormModal> {
               Text(
                 'About Count Limits',
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 15,
                   fontWeight: FontWeight.w600,
                   color: AppColors.primary,
                   fontFamily: AppTextStyles.fontFamily,
@@ -395,7 +395,7 @@ class _TasbeehFormModalState extends State<TasbeehFormModal> {
             '• Custom: Set your own target count\n\n'
             'When you reach the target, the counter will reset and start a new round.',
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 13,
               color: AppColors.textSecondaryColor(isDark),
               fontFamily: AppTextStyles.fontFamily,
               height: 1.4,
@@ -413,7 +413,7 @@ class _TasbeehFormModalState extends State<TasbeehFormModal> {
       case 1:
         return 'Traditional count of 33 - commonly used for Tasbih';
       case 2:
-        return 'Traditional count of 99 - one of the 99 names of Allah';
+        return 'Traditional count of 99 - commonly used for Tasbih';
       case 3:
         return 'Set your own custom target count';
       default:
