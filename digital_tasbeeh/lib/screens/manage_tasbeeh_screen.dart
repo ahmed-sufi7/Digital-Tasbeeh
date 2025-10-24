@@ -298,30 +298,6 @@ class _ManageTasbeehScreenState extends State<ManageTasbeehScreen> {
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Current Count Badge
-                      if (tasbeeh.currentCount > 0)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            '${tasbeeh.currentCount}',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.primary,
-                              fontFamily: AppTextStyles.fontFamily,
-                            ),
-                          ),
-                        ),
-
-                      const SizedBox(width: 8),
-
                       // Selection Checkmark
                       AnimatedScale(
                         scale: isSelected ? 1.0 : 0.0,
@@ -484,29 +460,32 @@ class _ManageTasbeehScreenState extends State<ManageTasbeehScreen> {
 
     showCupertinoModalPopup<void>(
       context: context,
-      builder: (BuildContext context) => CupertinoActionSheet(
-        title: Text(tasbeeh.name, style: const TextStyle(fontSize: 16)),
-        actions: [
-          CupertinoActionSheetAction(
-            onPressed: () {
-              Navigator.pop(context);
-              _showEditTasbeehModal(context, tasbeeh);
-            },
-            child: const Text('Edit'),
-          ),
-          if (!tasbeeh.isDefault)
+      builder: (BuildContext context) => Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        child: CupertinoActionSheet(
+          title: Text(tasbeeh.name, style: const TextStyle(fontSize: 16)),
+          actions: [
             CupertinoActionSheetAction(
-              isDestructiveAction: true,
               onPressed: () {
                 Navigator.pop(context);
-                _showDeleteConfirmation(context, tasbeeh);
+                _showEditTasbeehModal(context, tasbeeh);
               },
-              child: const Text('Delete'),
+              child: const Text('Edit'),
             ),
-        ],
-        cancelButton: CupertinoActionSheetAction(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
+            if (!tasbeeh.isDefault)
+              CupertinoActionSheetAction(
+                isDestructiveAction: true,
+                onPressed: () {
+                  Navigator.pop(context);
+                  _showDeleteConfirmation(context, tasbeeh);
+                },
+                child: const Text('Delete'),
+              ),
+          ],
+          cancelButton: CupertinoActionSheetAction(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
         ),
       ),
     );
