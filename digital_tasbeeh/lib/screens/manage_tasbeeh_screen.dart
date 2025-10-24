@@ -122,6 +122,7 @@ class _ManageTasbeehScreenState extends State<ManageTasbeehScreen> {
           color: AppColors.surfaceColor(isDark),
           borderRadius: BorderRadius.circular(12),
         ),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
         prefix: Padding(
           padding: const EdgeInsets.only(left: 16),
           child: Icon(

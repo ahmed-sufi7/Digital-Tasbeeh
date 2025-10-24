@@ -198,6 +198,7 @@ class _TasbeehFormModalState extends State<TasbeehFormModal> {
               color: AppColors.surfaceColor(isDark),
               borderRadius: BorderRadius.circular(12),
             ),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             maxLength: 50,
             onChanged: (value) {
               if (_nameError != null) {
@@ -327,6 +328,7 @@ class _TasbeehFormModalState extends State<TasbeehFormModal> {
               color: AppColors.surfaceColor(isDark),
               borderRadius: BorderRadius.circular(12),
             ),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             keyboardType: TextInputType.number,
             inputFormatters: [
               FilteringTextInputFormatter.digitsOnly,
