@@ -21,7 +21,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 2,
+      version: 3,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -90,30 +90,55 @@ class DatabaseHelper {
       // Update default Tasbeehs with Arabic names and correct target counts
       await _updateDefaultTasbeehs(db);
     }
+    if (oldVersion < 3) {
+      // Fix is_default flag for all preset Tasbeehs
+      await _updateDefaultTasbeehs(db);
+    }
   }
 
   Future<void> _updateDefaultTasbeehs(Database db) async {
-    // Update existing default Tasbeehs with Arabic names and correct target counts
+    // Update existing default Tasbeehs with Arabic names, correct target counts, and is_default flag
     final updates = [
       {
         'id': 'default_sallallahu_alayhi_wasallam',
         'name': 'صلى الله عليه وسلم',
         'target_count': null, // Unlimited
+        'is_default': 1,
       },
-      {'id': 'default_subhanallah', 'name': 'سبحان الله', 'target_count': 33},
-      {'id': 'default_allahu_akbar', 'name': 'الله أكبر', 'target_count': 33},
-      {'id': 'default_alhamdulillah', 'name': 'الحمد لله', 'target_count': 33},
+      {
+        'id': 'default_subhanallah',
+        'name': 'سبحان الله',
+        'target_count': 33,
+        'is_default': 1,
+      },
+      {
+        'id': 'default_allahu_akbar',
+        'name': 'الله أكبر',
+        'target_count': 33,
+        'is_default': 1,
+      },
+      {
+        'id': 'default_alhamdulillah',
+        'name': 'الحمد لله',
+        'target_count': 33,
+        'is_default': 1,
+      },
       {
         'id': 'default_la_ilaha_illa_allah',
         'name': 'لا إله إلا الله',
         'target_count': 100,
+        'is_default': 1,
       },
     ];
 
     for (final update in updates) {
       await db.update(
         'tasbeehs',
-        {'name': update['name'], 'target_count': update['target_count']},
+        {
+          'name': update['name'],
+          'target_count': update['target_count'],
+          'is_default': update['is_default'],
+        },
         where: 'id = ?',
         whereArgs: [update['id']],
       );
@@ -142,7 +167,7 @@ class DatabaseHelper {
         'round_number': 1,
         'created_at': now,
         'last_used_at': now,
-        'is_default': 0,
+        'is_default': 1,
       },
       {
         'id': 'default_allahu_akbar',
@@ -152,7 +177,7 @@ class DatabaseHelper {
         'round_number': 1,
         'created_at': now,
         'last_used_at': now,
-        'is_default': 0,
+        'is_default': 1,
       },
       {
         'id': 'default_alhamdulillah',
@@ -162,7 +187,7 @@ class DatabaseHelper {
         'round_number': 1,
         'created_at': now,
         'last_used_at': now,
-        'is_default': 0,
+        'is_default': 1,
       },
       {
         'id': 'default_la_ilaha_illa_allah',
@@ -172,7 +197,7 @@ class DatabaseHelper {
         'round_number': 1,
         'created_at': now,
         'last_used_at': now,
-        'is_default': 0,
+        'is_default': 1,
       },
     ];
 
