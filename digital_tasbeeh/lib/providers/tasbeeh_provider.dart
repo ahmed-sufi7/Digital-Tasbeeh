@@ -11,6 +11,9 @@ class TasbeehProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _error;
 
+  // Callback for when a Tasbeeh is updated
+  Function(String tasbeehId)? _onTasbeehUpdated;
+
   // Getters
   List<Tasbeeh> get tasbeehs => _tasbeehs;
   Tasbeeh? get selectedTasbeeh => _selectedTasbeeh;
@@ -29,6 +32,11 @@ class TasbeehProvider extends ChangeNotifier {
   // Initialize provider
   Future<void> initialize() async {
     await loadTasbeehs();
+  }
+
+  // Set callback for when a Tasbeeh is updated
+  void setOnTasbeehUpdatedCallback(Function(String tasbeehId)? callback) {
+    _onTasbeehUpdated = callback;
   }
 
   // Load all Tasbeehs
@@ -138,6 +146,11 @@ class TasbeehProvider extends ChangeNotifier {
 
       await _repository.updateTasbeeh(updatedTasbeeh);
       await loadTasbeehs(); // Refresh list
+
+      // Notify callback if set
+      if (_onTasbeehUpdated != null) {
+        _onTasbeehUpdated!(id);
+      }
 
       return true;
     } catch (e) {

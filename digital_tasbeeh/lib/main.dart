@@ -57,7 +57,7 @@ class DigitalTasbeehApp extends StatelessWidget {
         title: 'Digital Tasbeeh',
         debugShowCheckedModeBanner: false,
         theme: _buildCupertinoTheme(),
-        home: const MainAppScreen(),
+        home: const ProvidersSetup(),
         localizationsDelegates: const [DefaultCupertinoLocalizations.delegate],
       ),
     );
@@ -122,5 +122,46 @@ class DigitalTasbeehApp extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class ProvidersSetup extends StatefulWidget {
+  const ProvidersSetup({super.key});
+
+  @override
+  State<ProvidersSetup> createState() => _ProvidersSetupState();
+}
+
+class _ProvidersSetupState extends State<ProvidersSetup> {
+  @override
+  void initState() {
+    super.initState();
+    // Set up the callback after the widget is built
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _setupProviderCallbacks();
+    });
+  }
+
+  void _setupProviderCallbacks() {
+    final tasbeehProvider = Provider.of<TasbeehProvider>(
+      context,
+      listen: false,
+    );
+    final counterProvider = Provider.of<CounterProvider>(
+      context,
+      listen: false,
+    );
+
+    // Set up callback to refresh counter when current Tasbeeh is updated
+    tasbeehProvider.setOnTasbeehUpdatedCallback((String tasbeehId) async {
+      if (counterProvider.currentTasbeeh?.id == tasbeehId) {
+        await counterProvider.refresh();
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const MainAppScreen();
   }
 }
