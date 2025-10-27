@@ -39,16 +39,21 @@ class StatsProvider extends ChangeNotifier {
   StatsData _currentStats = StatsData.empty;
   TimePeriod _selectedTimePeriod = TimePeriod.weekly;
   bool _isLoading = false;
+  bool _isLoadingBarChart = false;
   String? _error;
 
   // Real-time data
   int _realTimeTotalCount = 0;
   Map<String, int> _realTimeTasbeehCounts = {};
 
+  // Cached data for different time periods to avoid unnecessary reloads
+  final Map<TimePeriod, Map<DateTime, int>> _cachedBarChartData = {};
+
   // Getters
   StatsData get currentStats => _currentStats;
   TimePeriod get selectedTimePeriod => _selectedTimePeriod;
   bool get isLoading => _isLoading;
+  bool get isLoadingBarChart => _isLoadingBarChart;
   String? get error => _error;
   int get realTimeTotalCount => _realTimeTotalCount;
   Map<String, int> get realTimeTasbeehCounts =>
@@ -58,6 +63,23 @@ class StatsProvider extends ChangeNotifier {
   Future<void> initialize() async {
     await loadStatistics();
     await _loadRealTimeData();
+    // Preload data for other time periods in the background
+    _preloadTimePeriodsInBackground();
+  }
+
+  // Preload data for all time periods in the background for smooth switching
+  void _preloadTimePeriodsInBackground() {
+    // Use a small delay to not interfere with initial loading
+    Future.delayed(const Duration(milliseconds: 500), () async {
+      for (final period in TimePeriod.values) {
+        if (period != _selectedTimePeriod &&
+            !_cachedBarChartData.containsKey(period)) {
+          await _loadBarChartDataForPeriod(period);
+          // Small delay between each preload to avoid overwhelming the database
+          await Future.delayed(const Duration(milliseconds: 100));
+        }
+      }
+    });
   }
 
   // Load statistics for current time period
@@ -97,6 +119,9 @@ class StatsProvider extends ChangeNotifier {
         tasbeehPercentages: tasbeehPercentages,
       );
 
+      // Cache the initial bar chart data
+      _cachedBarChartData[_selectedTimePeriod] = dailyData;
+
       _realTimeTotalCount = totalCount;
     } catch (e) {
       _setError('Failed to load statistics: $e');
@@ -105,11 +130,37 @@ class StatsProvider extends ChangeNotifier {
     }
   }
 
-  // Change time period and reload data
+  // Change time period without full reload - only update bar chart data
   Future<void> setTimePeriod(TimePeriod period) async {
     if (_selectedTimePeriod != period) {
       _selectedTimePeriod = period;
-      await loadStatistics();
+
+      // Check if we have cached data for this period
+      if (!_cachedBarChartData.containsKey(period)) {
+        await _loadBarChartDataForPeriod(period);
+      }
+
+      // Only notify listeners to update the bar chart, not the entire screen
+      notifyListeners();
+    }
+  }
+
+  // Load bar chart data for a specific time period without affecting other data
+  Future<void> _loadBarChartDataForPeriod(TimePeriod period) async {
+    _isLoadingBarChart = true;
+    notifyListeners();
+
+    try {
+      final dateRange = _getDateRangeForPeriod(period);
+      final dailyData = await _countHistoryRepository.getDailyAggregatedCounts(
+        dateRange.start,
+        dateRange.end,
+      );
+      _cachedBarChartData[period] = dailyData;
+    } catch (e) {
+      debugPrint('Failed to load bar chart data for period $period: $e');
+    } finally {
+      _isLoadingBarChart = false;
     }
   }
 
@@ -132,8 +183,11 @@ class StatsProvider extends ChangeNotifier {
 
   // Get chart data for bar chart with sophisticated processing
   List<ChartData> getBarChartData() {
+    // Use cached data for the selected time period if available
+    final barChartData =
+        _cachedBarChartData[_selectedTimePeriod] ?? _currentStats.dailyData;
     return ChartDataService.prepareBarChartData(
-      _currentStats.dailyData,
+      barChartData,
       _selectedTimePeriod,
     );
   }

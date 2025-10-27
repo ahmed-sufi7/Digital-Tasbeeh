@@ -219,13 +219,15 @@ class _StatsScreenState extends State<StatsScreen> {
           style: AppTextStyles.navigationLargeTitle(isDark),
         ),
         const SizedBox(height: 16),
-        if (statsProvider.isLoading)
+        // Show loading only for initial load, not for time period changes
+        if (statsProvider.isLoading && statsProvider.getBarChartData().isEmpty)
           ChartLoadingAnimation(
             isDark: isDark,
             message: 'Preparing chart data...',
             height: 320,
           )
-        else if (statsProvider.error != null)
+        else if (statsProvider.error != null &&
+            statsProvider.getBarChartData().isEmpty)
           ChartErrorState(
             isDark: isDark,
             error: statsProvider.error!,
@@ -233,13 +235,38 @@ class _StatsScreenState extends State<StatsScreen> {
             height: 320,
           )
         else
-          IOSBarChart(
-            data: statsProvider.getBarChartData(),
-            timePeriod: statsProvider.selectedTimePeriod,
-            isDark: isDark,
-            onTimePeriodChanged: (TimePeriod period) {
-              statsProvider.setTimePeriod(period);
-            },
+          Stack(
+            children: [
+              IOSBarChart(
+                data: statsProvider.getBarChartData(),
+                timePeriod: statsProvider.selectedTimePeriod,
+                isDark: isDark,
+                onTimePeriodChanged: (TimePeriod period) {
+                  statsProvider.setTimePeriod(period);
+                },
+              ),
+              // Show a subtle loading indicator for time period changes
+              if (statsProvider.isLoadingBarChart)
+                Positioned(
+                  top: 60, // Position below the time period selector
+                  right: 16,
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceColor(isDark).withOpacity(0.9),
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.shadowColor(isDark),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: const CupertinoActivityIndicator(radius: 8),
+                  ),
+                ),
+            ],
           ),
       ],
     );
@@ -258,13 +285,15 @@ class _StatsScreenState extends State<StatsScreen> {
           style: AppTextStyles.navigationLargeTitle(isDark),
         ),
         const SizedBox(height: 16),
-        if (statsProvider.isLoading)
+        // Only show loading during initial load, not during time period changes
+        if (statsProvider.isLoading && statsProvider.getPieChartData().isEmpty)
           ChartLoadingAnimation(
             isDark: isDark,
             message: 'Calculating distribution...',
             height: 400,
           )
-        else if (statsProvider.error != null)
+        else if (statsProvider.error != null &&
+            statsProvider.getPieChartData().isEmpty)
           ChartErrorState(
             isDark: isDark,
             error: statsProvider.error!,
