@@ -52,6 +52,9 @@ class DigitalTasbeehApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (context) => TasbeehProvider()..initialize(),
         ),
+        ChangeNotifierProvider(
+          create: (context) => StatsProvider()..initialize(),
+        ),
       ],
       child: CupertinoApp(
         title: 'Digital Tasbeeh',
@@ -151,12 +154,21 @@ class _ProvidersSetupState extends State<ProvidersSetup> {
       context,
       listen: false,
     );
+    final statsProvider = Provider.of<StatsProvider>(context, listen: false);
 
     // Set up callback to refresh counter when current Tasbeeh is updated
     tasbeehProvider.setOnTasbeehUpdatedCallback((String tasbeehId) async {
       if (counterProvider.currentTasbeeh?.id == tasbeehId) {
         await counterProvider.refresh();
       }
+    });
+
+    // Set up callback to update stats when counter changes
+    counterProvider.setOnCountChangedCallback((
+      String tasbeehId,
+      int newCount,
+    ) async {
+      await statsProvider.updateRealTimeStats(tasbeehId, newCount);
     });
   }
 

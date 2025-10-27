@@ -14,6 +14,9 @@ class CounterProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _error;
 
+  // Callback for when count changes
+  Function(String tasbeehId, int newCount)? _onCountChanged;
+
   // Getters
   Tasbeeh? get currentTasbeeh => _currentTasbeeh;
   bool get isLoading => _isLoading;
@@ -50,6 +53,13 @@ class CounterProvider extends ChangeNotifier {
   // Initialize the provider with default Tasbeeh
   Future<void> initialize() async {
     await _loadDefaultTasbeeh();
+  }
+
+  // Set callback for when count changes
+  void setOnCountChangedCallback(
+    Function(String tasbeehId, int newCount)? callback,
+  ) {
+    _onCountChanged = callback;
   }
 
   // Load the default Tasbeeh on app start
@@ -157,6 +167,11 @@ class CounterProvider extends ChangeNotifier {
         lastUsedAt: DateTime.now(),
       );
 
+      // Notify stats provider of count change
+      if (_onCountChanged != null) {
+        _onCountChanged!(_currentTasbeeh!.id, newCount);
+      }
+
       notifyListeners();
       return true;
     } catch (e) {
@@ -196,6 +211,11 @@ class CounterProvider extends ChangeNotifier {
         lastUsedAt: DateTime.now(),
       );
 
+      // Notify stats provider of count change
+      if (_onCountChanged != null) {
+        _onCountChanged!(_currentTasbeeh!.id, newCount);
+      }
+
       notifyListeners();
       return true;
     } catch (e) {
@@ -223,6 +243,11 @@ class CounterProvider extends ChangeNotifier {
         roundNumber: 1,
         lastUsedAt: DateTime.now(),
       );
+
+      // Notify stats provider of count change
+      if (_onCountChanged != null) {
+        _onCountChanged!(_currentTasbeeh!.id, 0);
+      }
 
       notifyListeners();
       return true;
