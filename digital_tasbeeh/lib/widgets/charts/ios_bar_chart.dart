@@ -275,14 +275,7 @@ class _IOSBarChartState extends State<IOSBarChart>
           reservedSize: 32,
         ),
       ),
-      leftTitles: AxisTitles(
-        sideTitles: SideTitles(
-          showTitles: true,
-          getTitlesWidget: _buildLeftTitles,
-          reservedSize: 40,
-          interval: _getLeftTitlesInterval(),
-        ),
-      ),
+      leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
     );
   }
 
@@ -300,25 +293,6 @@ class _IOSBarChartState extends State<IOSBarChart>
         ),
       ),
     );
-  }
-
-  Widget _buildLeftTitles(double value, TitleMeta meta) {
-    return Text(
-      _formatCount(value.toInt()),
-      style: AppTextStyles.bodySmall(widget.isDark).copyWith(
-        color: AppColors.textSecondaryColor(widget.isDark),
-        fontWeight: FontWeight.w500,
-      ),
-    );
-  }
-
-  double _getLeftTitlesInterval() {
-    final maxY = _getMaxY();
-    if (maxY <= 10) return 2;
-    if (maxY <= 50) return 10;
-    if (maxY <= 100) return 20;
-    if (maxY <= 500) return 100;
-    return (maxY / 5).ceilToDouble();
   }
 
   List<BarChartGroupData> _buildBarGroups() {
@@ -371,10 +345,21 @@ class _IOSBarChartState extends State<IOSBarChart>
   }
 
   FlGridData _buildGridData() {
+    final maxY = _getMaxY();
+    final interval = maxY <= 10
+        ? 2.0
+        : maxY <= 50
+        ? 10.0
+        : maxY <= 100
+        ? 20.0
+        : maxY <= 500
+        ? 100.0
+        : (maxY / 5).ceilToDouble();
+
     return FlGridData(
       show: true,
       drawVerticalLine: false,
-      horizontalInterval: _getLeftTitlesInterval(),
+      horizontalInterval: interval,
       getDrawingHorizontalLine: (value) {
         return FlLine(
           color: AppColors.borderColor(widget.isDark).withOpacity(0.2),
@@ -382,14 +367,5 @@ class _IOSBarChartState extends State<IOSBarChart>
         );
       },
     );
-  }
-
-  String _formatCount(int count) {
-    if (count >= 1000000) {
-      return '${(count / 1000000).toStringAsFixed(1)}M';
-    } else if (count >= 1000) {
-      return '${(count / 1000).toStringAsFixed(1)}K';
-    }
-    return count.toString();
   }
 }
