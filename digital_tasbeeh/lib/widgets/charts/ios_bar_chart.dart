@@ -89,7 +89,6 @@ class _IOSBarChartState extends State<IOSBarChart>
         ),
         child: CupertinoSegmentedControl<TimePeriod>(
           children: {
-            TimePeriod.daily: _buildSegmentChild('Day'),
             TimePeriod.weekly: _buildSegmentChild('Week'),
             TimePeriod.monthly: _buildSegmentChild('Month'),
             TimePeriod.yearly: _buildSegmentChild('Year'),

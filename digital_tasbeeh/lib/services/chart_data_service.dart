@@ -9,7 +9,10 @@ class ChartDataService {
   ) {
     if (rawData.isEmpty) return [];
 
-    final sortedEntries = rawData.entries.toList()
+    // First, aggregate data by time period
+    final aggregatedData = aggregateDataByTimePeriod(rawData, timePeriod);
+
+    final sortedEntries = aggregatedData.entries.toList()
       ..sort((a, b) => a.key.compareTo(b.key));
 
     // Fill gaps in data for smooth visualization
@@ -216,40 +219,44 @@ class ChartDataService {
 
   static DateTime _getAggregatedDate(DateTime date, TimePeriod timePeriod) {
     switch (timePeriod) {
-      case TimePeriod.daily:
-        return DateTime(date.year, date.month, date.day, date.hour);
       case TimePeriod.weekly:
+        // For weekly view, group by individual days (Mon, Tue, Wed, etc.)
+        return DateTime(date.year, date.month, date.day);
+      case TimePeriod.monthly:
+        // For monthly view, group by weeks within the month
         final startOfWeek = date.subtract(Duration(days: date.weekday - 1));
         return DateTime(startOfWeek.year, startOfWeek.month, startOfWeek.day);
-      case TimePeriod.monthly:
-        return DateTime(date.year, date.month, date.day);
       case TimePeriod.yearly:
+        // For yearly view, group by months
         return DateTime(date.year, date.month);
     }
   }
 
   static DateTime _getNextDate(DateTime date, TimePeriod timePeriod) {
     switch (timePeriod) {
-      case TimePeriod.daily:
-        return date.add(const Duration(hours: 1));
       case TimePeriod.weekly:
+        // For weekly view, increment by day
         return date.add(const Duration(days: 1));
       case TimePeriod.monthly:
-        return date.add(const Duration(days: 1));
+        // For monthly view, increment by week
+        return date.add(const Duration(days: 7));
       case TimePeriod.yearly:
+        // For yearly view, increment by month
         return DateTime(date.year, date.month + 1);
     }
   }
 
   static String _formatDateLabel(DateTime date, TimePeriod timePeriod) {
     switch (timePeriod) {
-      case TimePeriod.daily:
-        return '${date.hour.toString().padLeft(2, '0')}:00';
       case TimePeriod.weekly:
+        // Show day names (Mon, Tue, Wed, etc.)
         return _getWeekdayName(date.weekday);
       case TimePeriod.monthly:
-        return date.day.toString();
+        // Show week numbers or week ranges
+        final weekOfMonth = ((date.day - 1) ~/ 7) + 1;
+        return 'W$weekOfMonth';
       case TimePeriod.yearly:
+        // Show month names (Jan, Feb, Mar, etc.)
         return _getMonthName(date.month);
     }
   }

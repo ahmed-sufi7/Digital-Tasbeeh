@@ -142,8 +142,6 @@ class ChartAccessibilityService {
 
   static String _getTimePeriodName(TimePeriod period) {
     switch (period) {
-      case TimePeriod.daily:
-        return 'daily';
       case TimePeriod.weekly:
         return 'weekly';
       case TimePeriod.monthly:

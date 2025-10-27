@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import '../services/count_history_repository.dart';
 import '../services/chart_data_service.dart';
 
-enum TimePeriod { daily, weekly, monthly, yearly }
+enum TimePeriod { weekly, monthly, yearly }
 
 class StatsData {
   final int totalCount;
@@ -181,11 +181,6 @@ class StatsProvider extends ChangeNotifier {
     final now = DateTime.now();
 
     switch (period) {
-      case TimePeriod.daily:
-        final startOfDay = DateTime(now.year, now.month, now.day);
-        final endOfDay = startOfDay.add(const Duration(days: 1));
-        return DateRange(startOfDay, endOfDay);
-
       case TimePeriod.weekly:
         final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
         final startOfWeekDate = DateTime(
@@ -217,42 +212,6 @@ class StatsProvider extends ChangeNotifier {
       percentages[entry.key] = (entry.value / total) * 100;
     }
     return percentages;
-  }
-
-  String _formatDateLabel(DateTime date) {
-    switch (_selectedTimePeriod) {
-      case TimePeriod.daily:
-        return '${date.hour}:00';
-      case TimePeriod.weekly:
-        return _getWeekdayName(date.weekday);
-      case TimePeriod.monthly:
-        return '${date.day}';
-      case TimePeriod.yearly:
-        return _getMonthName(date.month);
-    }
-  }
-
-  String _getWeekdayName(int weekday) {
-    const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    return weekdays[weekday - 1];
-  }
-
-  String _getMonthName(int month) {
-    const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-    return months[month - 1];
   }
 
   String _getMostUsedTasbeeh() {
@@ -287,8 +246,6 @@ class StatsProvider extends ChangeNotifier {
 
   String _getPeriodLabel() {
     switch (_selectedTimePeriod) {
-      case TimePeriod.daily:
-        return 'Today';
       case TimePeriod.weekly:
         return 'This Week';
       case TimePeriod.monthly:
