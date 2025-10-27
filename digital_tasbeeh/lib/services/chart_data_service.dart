@@ -7,28 +7,44 @@ class ChartDataService {
     Map<DateTime, int> rawData,
     TimePeriod timePeriod,
   ) {
-    if (rawData.isEmpty) return [];
+    if (rawData.isEmpty) {
+      // If no data, generate expected range based on current date
+      final expectedDates = _generateExpectedDateRange(timePeriod);
+      return expectedDates
+          .map(
+            (date) => ChartData(
+              date: date,
+              count: 0,
+              label: _formatDateLabel(date, timePeriod),
+            ),
+          )
+          .toList();
+    }
 
-    // First, aggregate data by time period
+    // First aggregate the raw data by time period
     final aggregatedData = aggregateDataByTimePeriod(rawData, timePeriod);
 
-    final sortedEntries = aggregatedData.entries.toList()
-      ..sort((a, b) => a.key.compareTo(b.key));
+    // Generate expected range based on the data's time period
+    final dataDate = rawData.keys.first; // Use first data point as reference
+    final expectedDates = _generateExpectedDateRangeForData(
+      timePeriod,
+      dataDate,
+    );
+    final chartData = <ChartData>[];
 
-    // Fill gaps in data for smooth visualization
-    final filledData = _fillDataGaps(sortedEntries, timePeriod);
-
-    // Apply data smoothing for better visual representation
-    final smoothedData = _applySmoothingFilter(filledData);
-
-    // Convert to ChartData objects with proper labels
-    return smoothedData.entries.map((entry) {
-      return ChartData(
-        date: entry.key,
-        count: entry.value,
-        label: _formatDateLabel(entry.key, timePeriod),
+    // For each expected date, find matching aggregated data
+    for (final expectedDate in expectedDates) {
+      final count = aggregatedData[expectedDate] ?? 0;
+      chartData.add(
+        ChartData(
+          date: expectedDate,
+          count: count,
+          label: _formatDateLabel(expectedDate, timePeriod),
+        ),
       );
-    }).toList();
+    }
+
+    return chartData;
   }
 
   /// Prepares pie chart data with percentage calculations and sorting
@@ -168,53 +184,72 @@ class ChartDataService {
 
   // Private helper methods
 
-  static Map<DateTime, int> _fillDataGaps(
-    List<MapEntry<DateTime, int>> sortedData,
-    TimePeriod timePeriod,
-  ) {
-    if (sortedData.isEmpty) return {};
-
-    final filledData = <DateTime, int>{};
-    final startDate = sortedData.first.key;
-    final endDate = sortedData.last.key;
-
-    // Create a map for quick lookup
-    final dataMap = Map.fromEntries(sortedData);
-
-    // Fill gaps based on time period
-    DateTime currentDate = startDate;
-    while (currentDate.isBefore(endDate) ||
-        currentDate.isAtSameMomentAs(endDate)) {
-      filledData[currentDate] = dataMap[currentDate] ?? 0;
-      currentDate = _getNextDate(currentDate, timePeriod);
-    }
-
-    return filledData;
+  /// Generates the expected date range for each time period (current date based)
+  static List<DateTime> _generateExpectedDateRange(TimePeriod timePeriod) {
+    final now = DateTime.now();
+    return _generateExpectedDateRangeForData(timePeriod, now);
   }
 
-  static Map<DateTime, int> _applySmoothingFilter(Map<DateTime, int> data) {
-    if (data.length < 3) return data;
+  /// Generates the expected date range for each time period based on a reference date
+  static List<DateTime> _generateExpectedDateRangeForData(
+    TimePeriod timePeriod,
+    DateTime referenceDate,
+  ) {
+    final dates = <DateTime>[];
 
-    final smoothedData = <DateTime, int>{};
-    final sortedEntries = data.entries.toList()
-      ..sort((a, b) => a.key.compareTo(b.key));
+    switch (timePeriod) {
+      case TimePeriod.weekly:
+        // Generate 7 days of the week containing the reference date (Mon-Sun)
+        final startOfWeek = referenceDate.subtract(
+          Duration(days: referenceDate.weekday - 1),
+        );
+        for (int i = 0; i < 7; i++) {
+          dates.add(
+            DateTime(startOfWeek.year, startOfWeek.month, startOfWeek.day + i),
+          );
+        }
+        break;
 
-    for (int i = 0; i < sortedEntries.length; i++) {
-      final current = sortedEntries[i];
+      case TimePeriod.monthly:
+        // Generate weeks of the month containing the reference date
+        final startOfMonth = DateTime(
+          referenceDate.year,
+          referenceDate.month,
+          1,
+        );
+        final endOfMonth = DateTime(
+          referenceDate.year,
+          referenceDate.month + 1,
+          0,
+        );
 
-      if (i == 0 || i == sortedEntries.length - 1) {
-        // Keep first and last values unchanged
-        smoothedData[current.key] = current.value;
-      } else {
-        // Apply simple moving average with weight on current value
-        final prev = sortedEntries[i - 1].value;
-        final next = sortedEntries[i + 1].value;
-        final smoothed = ((prev + (current.value * 2) + next) / 4).round();
-        smoothedData[current.key] = smoothed;
-      }
+        DateTime currentWeekStart = startOfMonth;
+        while (currentWeekStart.isBefore(endOfMonth) ||
+            currentWeekStart.month == referenceDate.month) {
+          // Get the start of the week for this date
+          final weekStart = currentWeekStart.subtract(
+            Duration(days: currentWeekStart.weekday - 1),
+          );
+          dates.add(DateTime(weekStart.year, weekStart.month, weekStart.day));
+          currentWeekStart = currentWeekStart.add(const Duration(days: 7));
+
+          // Break if we've moved to the next month
+          if (currentWeekStart.month != referenceDate.month &&
+              currentWeekStart.year == referenceDate.year) {
+            break;
+          }
+        }
+        break;
+
+      case TimePeriod.yearly:
+        // Generate 12 months of the year containing the reference date
+        for (int month = 1; month <= 12; month++) {
+          dates.add(DateTime(referenceDate.year, month));
+        }
+        break;
     }
 
-    return smoothedData;
+    return dates;
   }
 
   static DateTime _getAggregatedDate(DateTime date, TimePeriod timePeriod) {
@@ -229,20 +264,6 @@ class ChartDataService {
       case TimePeriod.yearly:
         // For yearly view, group by months
         return DateTime(date.year, date.month);
-    }
-  }
-
-  static DateTime _getNextDate(DateTime date, TimePeriod timePeriod) {
-    switch (timePeriod) {
-      case TimePeriod.weekly:
-        // For weekly view, increment by day
-        return date.add(const Duration(days: 1));
-      case TimePeriod.monthly:
-        // For monthly view, increment by week
-        return date.add(const Duration(days: 7));
-      case TimePeriod.yearly:
-        // For yearly view, increment by month
-        return DateTime(date.year, date.month + 1);
     }
   }
 
