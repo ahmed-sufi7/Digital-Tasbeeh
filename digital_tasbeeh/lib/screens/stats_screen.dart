@@ -248,7 +248,7 @@ class _StatsScreenState extends State<StatsScreen> {
               // Show a subtle loading indicator for time period changes
               if (statsProvider.isLoadingBarChart)
                 Positioned(
-                  top: 60, // Position below the time period selector
+                  bottom: 30, // Position over the selector area at bottom
                   right: 16,
                   child: Container(
                     padding: const EdgeInsets.all(8),

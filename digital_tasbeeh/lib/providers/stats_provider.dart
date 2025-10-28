@@ -175,9 +175,36 @@ class StatsProvider extends ChangeNotifier {
       _realTimeTasbeehCounts = await _countHistoryRepository
           .getCountDistributionByTasbeeh();
 
+      // Refresh cached chart data for all time periods to include new data
+      await _refreshAllCachedChartData();
+
       notifyListeners();
     } catch (e) {
       debugPrint('Failed to update real-time stats: $e');
+    }
+  }
+
+  // Refresh cached chart data for all time periods
+  Future<void> _refreshAllCachedChartData() async {
+    try {
+      // Clear existing cache
+      _cachedBarChartData.clear();
+
+      // Reload data for current time period first (priority)
+      await _loadBarChartDataForPeriod(_selectedTimePeriod);
+
+      // Preload other time periods in background for smooth switching
+      Future.delayed(const Duration(milliseconds: 100), () async {
+        for (final period in TimePeriod.values) {
+          if (period != _selectedTimePeriod) {
+            await _loadBarChartDataForPeriod(period);
+            // Small delay between each preload to avoid overwhelming the database
+            await Future.delayed(const Duration(milliseconds: 50));
+          }
+        }
+      });
+    } catch (e) {
+      debugPrint('Failed to refresh cached chart data: $e');
     }
   }
 

@@ -62,13 +62,67 @@ class _IOSBarChartState extends State<IOSBarChart>
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildTimePeriodSelector(),
-        const SizedBox(height: 16),
-        _buildChart(),
-      ],
+    if (widget.data.isEmpty) {
+      return _buildEmptyStateWithSelector();
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surfaceColor(widget.isDark),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppColors.borderColor(widget.isDark).withOpacity(0.3),
+          width: 0.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.shadowColor(widget.isDark),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+            spreadRadius: -5,
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Chart
+          Container(
+            height: 280,
+            padding: const EdgeInsets.all(20),
+            child: Semantics(
+              label: ChartAccessibilityService.generateBarChartDescription(
+                widget.data,
+                widget.timePeriod,
+              ),
+              hint: ChartAccessibilityService.generateChartInteractionHint(
+                'bar',
+              ),
+              child: AnimatedBuilder(
+                animation: _animation,
+                builder: (context, child) {
+                  return BarChart(
+                    BarChartData(
+                      alignment: BarChartAlignment.spaceAround,
+                      maxY: _getMaxY(),
+                      barTouchData: _buildBarTouchData(),
+                      titlesData: _buildTitlesData(),
+                      borderData: FlBorderData(show: false),
+                      barGroups: _buildBarGroups(),
+                      gridData: _buildGridData(),
+                      backgroundColor: Colors.transparent,
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+          // Time Period Selector at bottom
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+            child: _buildTimePeriodSelector(),
+          ),
+        ],
+      ),
     );
   }
 
@@ -122,14 +176,8 @@ class _IOSBarChartState extends State<IOSBarChart>
     );
   }
 
-  Widget _buildChart() {
-    if (widget.data.isEmpty) {
-      return _buildEmptyState();
-    }
-
+  Widget _buildEmptyStateWithSelector() {
     return Container(
-      height: 280,
-      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: AppColors.surfaceColor(widget.isDark),
         borderRadius: BorderRadius.circular(16),
@@ -137,84 +185,51 @@ class _IOSBarChartState extends State<IOSBarChart>
           color: AppColors.borderColor(widget.isDark).withOpacity(0.3),
           width: 0.5,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.shadowColor(widget.isDark),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-            spreadRadius: -5,
+      ),
+      child: Column(
+        children: [
+          // Empty state content
+          Container(
+            height: 280,
+            padding: const EdgeInsets.all(20),
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    CupertinoIcons.chart_bar_alt_fill,
+                    size: 48,
+                    color: AppColors.textSecondaryColor(
+                      widget.isDark,
+                    ).withOpacity(0.6),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'No data available',
+                    style: AppTextStyles.bodyLarge(widget.isDark).copyWith(
+                      color: AppColors.textSecondaryColor(widget.isDark),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Start counting to see your progress',
+                    style: AppTextStyles.bodyMedium(widget.isDark).copyWith(
+                      color: AppColors.textSecondaryColor(
+                        widget.isDark,
+                      ).withOpacity(0.7),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          // Time Period Selector at bottom
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+            child: _buildTimePeriodSelector(),
           ),
         ],
-      ),
-      child: Semantics(
-        label: ChartAccessibilityService.generateBarChartDescription(
-          widget.data,
-          widget.timePeriod,
-        ),
-        hint: ChartAccessibilityService.generateChartInteractionHint('bar'),
-        child: AnimatedBuilder(
-          animation: _animation,
-          builder: (context, child) {
-            return BarChart(
-              BarChartData(
-                alignment: BarChartAlignment.spaceAround,
-                maxY: _getMaxY(),
-                barTouchData: _buildBarTouchData(),
-                titlesData: _buildTitlesData(),
-                borderData: FlBorderData(show: false),
-                barGroups: _buildBarGroups(),
-                gridData: _buildGridData(),
-                backgroundColor: Colors.transparent,
-              ),
-            );
-          },
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEmptyState() {
-    return Container(
-      height: 280,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceColor(widget.isDark),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: AppColors.borderColor(widget.isDark).withOpacity(0.3),
-          width: 0.5,
-        ),
-      ),
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              CupertinoIcons.chart_bar_alt_fill,
-              size: 48,
-              color: AppColors.textSecondaryColor(
-                widget.isDark,
-              ).withOpacity(0.6),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'No data available',
-              style: AppTextStyles.bodyLarge(
-                widget.isDark,
-              ).copyWith(color: AppColors.textSecondaryColor(widget.isDark)),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Start counting to see your progress',
-              style: AppTextStyles.bodyMedium(widget.isDark).copyWith(
-                color: AppColors.textSecondaryColor(
-                  widget.isDark,
-                ).withOpacity(0.7),
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
       ),
     );
   }
