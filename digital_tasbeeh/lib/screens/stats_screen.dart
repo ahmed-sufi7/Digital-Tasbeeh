@@ -118,7 +118,16 @@ class _StatsScreenState extends State<StatsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Overview', style: AppTextStyles.navigationLargeTitle(isDark)),
+        Text(
+          'Overview',
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textPrimaryColor(isDark),
+            fontFamily: AppTextStyles.fontFamily,
+            letterSpacing: -0.4,
+          ),
+        ),
         const SizedBox(height: 16),
         Row(
           children: [
@@ -216,7 +225,13 @@ class _StatsScreenState extends State<StatsScreen> {
       children: [
         Text(
           'Progress Over Time',
-          style: AppTextStyles.navigationLargeTitle(isDark),
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textPrimaryColor(isDark),
+            fontFamily: AppTextStyles.fontFamily,
+            letterSpacing: -0.4,
+          ),
         ),
         const SizedBox(height: 16),
         // Show loading only for initial load, not for time period changes
@@ -282,7 +297,13 @@ class _StatsScreenState extends State<StatsScreen> {
       children: [
         Text(
           'Tasbeeh Distribution',
-          style: AppTextStyles.navigationLargeTitle(isDark),
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textPrimaryColor(isDark),
+            fontFamily: AppTextStyles.fontFamily,
+            letterSpacing: -0.4,
+          ),
         ),
         const SizedBox(height: 16),
         // Only show loading during initial load, not during time period changes
@@ -363,7 +384,13 @@ class _StatsScreenState extends State<StatsScreen> {
       children: [
         Text(
           'Tasbeeh Breakdown',
-          style: AppTextStyles.navigationLargeTitle(isDark),
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textPrimaryColor(isDark),
+            fontFamily: AppTextStyles.fontFamily,
+            letterSpacing: -0.4,
+          ),
         ),
         const SizedBox(height: 12),
         Container(
