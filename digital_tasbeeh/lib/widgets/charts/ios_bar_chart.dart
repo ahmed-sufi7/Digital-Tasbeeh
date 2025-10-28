@@ -88,7 +88,7 @@ class _IOSBarChartState extends State<IOSBarChart>
           // Chart
           Container(
             height: 280,
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.fromLTRB(20, 32, 20, 12),
             child: Semantics(
               label: ChartAccessibilityService.generateBarChartDescription(
                 widget.data,
@@ -177,7 +177,7 @@ class _IOSBarChartState extends State<IOSBarChart>
           // Empty state content
           Container(
             height: 280,
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.fromLTRB(20, 32, 20, 12),
             child: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -268,7 +268,9 @@ class _IOSBarChartState extends State<IOSBarChart>
     return FlTitlesData(
       show: true,
       rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-      topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+      topTitles: const AxisTitles(
+        sideTitles: SideTitles(showTitles: false, reservedSize: 40),
+      ),
       bottomTitles: AxisTitles(
         sideTitles: SideTitles(
           showTitles: true,
