@@ -291,6 +291,7 @@ class _IOSBarChartState extends State<IOSBarChart>
         style: AppTextStyles.bodySmall(widget.isDark).copyWith(
           color: AppColors.textSecondaryColor(widget.isDark),
           fontWeight: FontWeight.w500,
+          fontSize: 11,
         ),
       ),
     );
