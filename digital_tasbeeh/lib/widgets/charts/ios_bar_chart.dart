@@ -127,51 +127,37 @@ class _IOSBarChartState extends State<IOSBarChart>
   }
 
   Widget _buildTimePeriodSelector() {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: AppColors.surfaceColor(widget.isDark).withOpacity(0.8),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: AppColors.borderColor(widget.isDark).withOpacity(0.3),
-          width: 0.5,
-        ),
+    return Semantics(
+      label: ChartAccessibilityService.generateTimePeriodSelectorDescription(
+        widget.timePeriod,
       ),
-      child: Semantics(
-        label: ChartAccessibilityService.generateTimePeriodSelectorDescription(
-          widget.timePeriod,
-        ),
-        child: CupertinoSegmentedControl<TimePeriod>(
-          children: {
-            TimePeriod.weekly: _buildSegmentChild('Week'),
-            TimePeriod.monthly: _buildSegmentChild('Month'),
-            TimePeriod.yearly: _buildSegmentChild('Year'),
-          },
-          groupValue: widget.timePeriod,
-          onValueChanged: (TimePeriod? value) {
-            if (value != null) {
-              HapticFeedback.lightImpact();
-              widget.onTimePeriodChanged?.call(value);
-            }
-          },
-          selectedColor: AppColors.primary,
-          unselectedColor: Colors.transparent,
-          borderColor: Colors.transparent,
-          pressedColor: AppColors.primary.withOpacity(0.1),
-        ),
+      child: CupertinoSlidingSegmentedControl<TimePeriod>(
+        groupValue: widget.timePeriod,
+        children: {
+          TimePeriod.weekly: _buildSegmentChild('Week'),
+          TimePeriod.monthly: _buildSegmentChild('Month'),
+          TimePeriod.yearly: _buildSegmentChild('Year'),
+        },
+        onValueChanged: (TimePeriod? value) {
+          if (value != null) {
+            HapticFeedback.selectionClick();
+            widget.onTimePeriodChanged?.call(value);
+          }
+        },
       ),
     );
   }
 
   Widget _buildSegmentChild(String text) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Text(
         text,
-        style: AppTextStyles.bodyMedium(
-          widget.isDark,
-        ).copyWith(fontWeight: FontWeight.w500),
+        style: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+          fontFamily: AppTextStyles.fontFamily,
+        ),
       ),
     );
   }
